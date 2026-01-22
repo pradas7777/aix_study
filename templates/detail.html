@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}{{ post.title }} - aix 신림 학생 커뮤니티 {% endblock %}
+
+{% block content %}
+
+
+<article>
+    <h2>{{ post.title }}</h2>
+    <div class="meta" style="margin-bottom: 20px;">
+        작성자: {{ post.author.nickname }} | 날짜: {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}
+    </div>
+    
+    <div style="white-space: pre-wrap; min-height: 200px; font-size: 22px;">
+        {{ post.content }}
+    </div>
+</article>
+
+<div class="comment-section">
+    <h3>댓글 ({{ post.comments|length }})</h3>
+    
+    {% for comment in post.comments %}
+    <div class="comment">
+        <strong>{{ comment.author.nickname }}</strong>: {{ comment.content }}
+        <div class="meta" style="font-size: 14px;">{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+    </div>
+    {% endfor %}
+    
+    <form action="/post/{{ post.id }}/comment" method="post" style="margin-top: 20px;">
+        <textarea name="content" rows="2" placeholder="댓글을 남겨보세요" required></textarea>
+        <button type="submit" class="btn btn-small" style="margin-top: 5px;">댓글 달기</button>
+    </form>
+</div>
+
+<div style="margin-top: 30px;">
+    <a href="/board/{{ post.type }}" class="btn btn-small" style="background: #95a5a6;">목록으로 돌아가기</a>
+</div>
+{% endblock %}

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %} AI+X 신림 학생 커뮤니티 {% endblock %}</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><a href="/">AI+X 신림반 학생 커뮤니티</a></h1>
+            <h4><a href="/">2025-12-23 ~ 2026-05-26</a></h1>
+            <div class="nav-menu">
+                <a href="/board/summary">오늘의 수업 요약</a>
+                <a href="/board/qna">질문 / 답변 (익명) </a>
+                <a href="/board/lounge">정보 공유 & 잡담</a>
+            </div>
+            <div style="background: #eee; padding: 10px; border-radius: 5px; font-size: 16px;">
+                내 닉네임: <strong>{{ visitor.nickname }}</strong>
+                <form action="/visitor/nickname" method="post" style="display: inline; margin-left: 10px;">
+                    <input type="text" name="nickname" placeholder="변경할 닉네임" style="width: 120px; font-size: 14px; padding: 2px;">
+                    <button type="submit" class="btn btn-small">변경</button>
+                </form>
+            </div>
+        </header>
+        
+        <main>
+            {% block content %}{% endblock %}
+        </main>
+        
+        <footer style="margin-top: 40px; text-align: center; font-size: 14px; color: #888;">
+            <p>&copy; 2026 AI+X 신림 화이팅</p>
+        </footer>
+    </div>
+</body>
+</html>

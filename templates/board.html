@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}{{ board_title }} - AI+X 신림 화이팅 {% endblock %}
+
+{% block content %}
+
+<h2>{{ board_title }}</h2>
+
+<div class="card" style="background: #f0f7ff;">
+    <h3>새 글 쓰기</h3>
+    <form action="/post/create" method="post">
+        <input type="hidden" name="type" value="{{ post_type }}">
+        <div>
+            <input type="text" name="title" placeholder="제목을 입력하세요" required>
+        </div>
+        <div>
+            <textarea name="content" rows="4" placeholder="내용을 입력하세요" required></textarea>
+        </div>
+        <button type="submit" class="btn">올리기</button>
+    </form>
+</div>
+
+<hr>
+
+{% if is_admin %}
+<form method="post" action="/post/{{ post.id }}/delete"
+      onsubmit="return confirm('정말 삭제하시겠습니까?');">
+  <button type="submit">🗑 삭제</button>
+</form>
+{% endif %}
+
+
+{% for post in posts %}
+<div class="card">
+    <h3><a href="/post/{{ post.id }}">{{ post.title }}</a></h3>
+    <div class="meta">
+        작성자: {{ post.author.nickname }} | 날짜: {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}
+    </div>
+    <p>{{ post.content[:100] }}{% if post.content|length > 100 %}...{% endif %}</p>
+</div>
+{% else %}
+<p>게시글이 없습니다. 첫 글을 남겨보세요!</p>
+{% endfor %}
+{% endblock %}
