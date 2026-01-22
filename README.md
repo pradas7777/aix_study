@@ -1,8 +1,4 @@
-# 익명 커뮤니티 게시판 프로젝트 (FastAPI + SQLAlchemy + MySQL)
-
-## 1. 프로젝트 개요
-
-본 프로젝트는 **Python FastAPI** 프레임워크와 **SQLAlchemy ORM**을 사용하여 구축된 간단한 익명 커뮤니티 웹사이트입니다. 데이터베이스로는 **MySQL**을 사용하며, 프론트엔드는 **Jinja2 템플릿**과 최소한의 CSS로 구성되어 있습니다.
+#신림 aix 커뮤니티 웹페이지 (파이썬 + FastAPI + SQLAlchemy + MySQL)
 
 **핵심 요구사항 준수 사항:**
 *   **백엔드**: Python FastAPI
