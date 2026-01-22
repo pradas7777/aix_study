@@ -3,42 +3,97 @@
 {% block title %}{{ board_title }} - AI+X 신림 화이팅 {% endblock %}
 
 {% block content %}
-
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
 <h2>{{ board_title }}</h2>
 
 <div class="card" style="background: #f0f7ff;">
-    <h3>새 글 쓰기</h3>
-    <form action="/post/create" method="post">
+    <div class="card" style="background: #f0f7ff;">
+    <h3>새 글 쓰기 (최대 5장)</h3>
+    <form action="/post/create" method="post" enctype="multipart/form-data" id="postForm">
         <input type="hidden" name="type" value="{{ post_type }}">
-        <div>
-            <input type="text" name="title" placeholder="제목을 입력하세요" required>
+        <div><input type="text" name="title" placeholder="제목" required></div>
+        
+        <div id="drop-zone" style="border: 2px dashed #3498db; padding: 20px; text-align: center; background: #fff; cursor: pointer;">
+            파일을 드래그하거나 클릭하여 이미지를 선택하세요 (최대 5장)
+            <input type="file" name="images" id="file-input" multiple accept="image/*" style="display: none;">
         </div>
-        <div>
-            <textarea name="content" rows="4" placeholder="내용을 입력하세요" required></textarea>
-        </div>
-        <button type="submit" class="btn">올리기</button>
+        <div id="preview-container" style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;"></div>
+
+        <div id="editor" style="height: 200px; background: white; margin-top: 10px;"></div>
+        <input type="hidden" name="content" id="content">
+        <button type="submit" class="btn" style="margin-top: 10px;">올리기</button>
     </form>
 </div>
+<script>
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const previewContainer = document.getElementById('preview-container');
 
-<hr>
+    dropZone.addEventListener('click', () => fileInput.click());
 
-{% if is_admin %}
-<form method="post" action="/post/{{ post.id }}/delete"
-      onsubmit="return confirm('정말 삭제하시겠습니까?');">
-  <button type="submit">🗑 삭제</button>
-</form>
-{% endif %}
+    fileInput.addEventListener('change', handleFiles);
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.style.background = '#e1f0fa'; });
+    dropZone.addEventListener('dragleave', () => dropZone.style.background = '#fff');
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        fileInput.files = e.dataTransfer.files;
+        handleFiles();
+    });
+
+    function handleFiles() {
+        previewContainer.innerHTML = '';
+        const files = Array.from(fileInput.files).slice(0, 5); // 5장 제한
+        files.forEach(file => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.style.width = '80px';
+                img.style.height = '80px';
+                img.style.objectFit = 'cover';
+                img.style.borderRadius = '5px';
+                previewContainer.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+</script>
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+<script>
+    var quill = new Quill('#editor', {
+        theme: 'snow',
+        placeholder: '내용을 입력하세요...'
+    });
+
+    // 폼 제출 시 에디터 내용을 숨겨진 input에 담아줍니다.
+    var form = document.getElementById('postForm');
+    form.onsubmit = function() {
+        var content = document.querySelector('input[name=content]');
+        content.value = quill.root.innerHTML;
+    };
+</script>
+
 
 
 {% for post in posts %}
 <div class="card">
-    <h3><a href="/post/{{ post.id }}">{{ post.title }}</a></h3>
+    <h3>
+        <a href="/post/{{ post.id }}">{{ post.title }}</a>
+        
+        {# 관리자일 때만 삭제 버튼을 보여줍니다 #}
+        {% if is_admin %}
+        <form method="post" action="/post/{{ post.id }}/delete" 
+              onsubmit="return confirm('정말 삭제하시겠습니까?');" 
+              style="display: inline; float: right;">
+          <button type="submit" class="admin-delete-btn">🗑 삭제</button>
+        </form>
+        {% endif %}
+    </h3>
+    
     <div class="meta">
         작성자: {{ post.author.nickname }} | 날짜: {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}
     </div>
     <p>{{ post.content[:100] }}{% if post.content|length > 100 %}...{% endif %}</p>
 </div>
-{% else %}
-<p>게시글이 없습니다. 첫 글을 남겨보세요!</p>
 {% endfor %}
 {% endblock %}

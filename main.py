@@ -11,8 +11,12 @@ import models
 from models import Post
 from database import engine, get_db, Base
 from fastapi.responses import RedirectResponse
+from fastapi import File, UploadFile 
+import shutil 
+from typing import List
 
-
+UPLOAD_DIR = "static/uploads"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 ADMIN_TOKEN = "super-admin-token"
 
 # 데이터베이스 테이블 생성
@@ -113,8 +117,18 @@ async def index(
     return response
 
 @app.get("/board/{post_type}", response_class=HTMLResponse)
-async def board_list(post_type: str, request: Request, db: Session = Depends(get_db), visitor_uuid: Optional[str] = Cookie(None)):
+async def board_list(
+    post_type: str, 
+    request: Request, 
+    db: Session = Depends(get_db), 
+    admin_token: Optional[str] = Cookie(None), # 쿠키에서 관리자 토큰을 가져옵니다.
+    visitor_uuid: Optional[str] = Cookie(None)
+):
     visitor, v_uuid = get_or_create_visitor(db, visitor_uuid)
+    
+    # 관리자인지 확인하는 변수입니다. (토큰이 일치하면 True, 아니면 False)
+    is_admin = admin_token == ADMIN_TOKEN 
+    
     posts = db.query(models.Post).filter(models.Post.type == post_type).order_by(models.Post.created_at.desc()).all()
     
     titles = {"summary": "수업 요약", "qna": "질문 답변", "lounge": "자유 게시판"}
@@ -125,18 +139,33 @@ async def board_list(post_type: str, request: Request, db: Session = Depends(get
         "posts": posts, 
         "post_type": post_type, 
         "board_title": board_title,
-        "visitor": visitor
+        "visitor": visitor,
+        "is_admin": is_admin # 템플릿(HTML)에서 쓸 수 있도록 전달합니다.
     })
 
 @app.get("/post/{post_id}", response_class=HTMLResponse)
-async def post_detail(post_id: int, request: Request, db: Session = Depends(get_db), visitor_uuid: Optional[str] = Cookie(None)):
+async def post_detail(
+    post_id: int, 
+    request: Request, 
+    db: Session = Depends(get_db), 
+    admin_token: Optional[str] = Cookie(None), # 관리자 토큰 가져오기
+    visitor_uuid: Optional[str] = Cookie(None)
+):
     visitor, v_uuid = get_or_create_visitor(db, visitor_uuid)
+    
+    # 관리자 여부 확인
+    is_admin = admin_token == ADMIN_TOKEN 
+    
     post = db.query(models.Post).filter(models.Post.id == post_id).first()
     if not post:
         raise HTTPException(status_code=404, detail="게시글을 찾을 수 없습니다.")
     
-    return templates.TemplateResponse("detail.html", {"request": request, "post": post, "visitor": visitor})
-
+    return templates.TemplateResponse("detail.html", {
+        "request": request, 
+        "post": post, 
+        "visitor": visitor,
+        "is_admin": is_admin # 템플릿에 관리자 여부 전달
+    })
 # --- API (데이터 처리) ---
 
 @app.post("/post/create")
@@ -144,23 +173,51 @@ async def create_post(
     type: str = Form(...),
     title: str = Form(...),
     content: str = Form(...),
+    images: List[UploadFile] = File(None), # 여러 파일을 리스트로 받습니다.
     db: Session = Depends(get_db),
     visitor_uuid: Optional[str] = Cookie(None)
 ):
-    # 익명 사용자 가져오기
+    # 1. 익명 사용자 정보를 가져옵니다.
     visitor, _ = get_or_create_visitor(db, visitor_uuid)
 
-    # 게시글 생성
+    # 2. 게시글 객체를 생성합니다. (image_url은 여기서 넣지 않습니다!)
     new_post = Post(
         type=type,
         title=title,
         content=content,
-        visitor_id=visitor.id,   # ✅ visitor 사용
+        visitor_id=visitor.id,
     )
 
     db.add(new_post)
+    # 3. flush()를 호출하여 DB에 임시로 저장하고 생성된 게시글의 ID(new_post.id)를 확보합니다.
+    db.flush()
+
+    # 4. 첨부된 이미지들이 있다면 처리합니다.
+    if images:
+        # 최대 5장까지만 반복문을 돕니다.
+        for img in images[:5]:
+            # 파일명이 있는 실제 파일인지 확인합니다.
+            if img.filename and img.filename.strip():
+                # 서버에 저장할 고유한 파일 이름을 만듭니다.
+                file_name = f"{uuid.uuid4()}_{img.filename}"
+                file_path = os.path.join(UPLOAD_DIR, file_name)
+                
+                # 실제로 파일을 서버 폴더에 저장합니다.
+                with open(file_path, "wb") as buffer:
+                    shutil.copyfileobj(img.file, buffer)
+                
+                # 5. DB의 이미지 테이블(PostImage)에 정보를 저장합니다.
+                # 웹상에서 접근 가능한 경로인 "/static/uploads/..." 형태로 저장합니다.
+                new_image = models.PostImage(
+                    post_id=new_post.id, 
+                    image_url=f"/static/uploads/{file_name}"
+                )
+                db.add(new_image)
+
+    # 6. 모든 변경사항을 최종적으로 DB에 반영합니다.
     db.commit()
 
+    # 완료 후 해당 게시판 목록으로 이동합니다.
     return RedirectResponse(
         url=f"/board/{type}",
         status_code=303

@@ -16,20 +16,25 @@ class Visitor(Base):
     comments = relationship("Comment", back_populates="author")
 
 class Post(Base):
-    """게시글 테이블 (수업 요약, Q&A, 라운지 통합)"""
     __tablename__ = "posts"
-
     id = Column(Integer, primary_key=True, index=True)
-    type = Column(String(20), index=True) # "summary", "qna", "lounge"
+    type = Column(String(20), index=True)
     title = Column(String(200), nullable=False)
     content = Column(Text, nullable=False)
     created_at = Column(DateTime, default=datetime.now)
-    
-    # 작성자 정보 (익명)
     visitor_id = Column(Integer, ForeignKey("visitors.id"))
     author = relationship("Visitor", back_populates="posts")
     
+    # 💡 이미지들과의 관계 설정 (1:N)
+    images = relationship("PostImage", back_populates="post", cascade="all, delete-orphan")
     comments = relationship("Comment", back_populates="post", cascade="all, delete-orphan")
+
+class PostImage(Base):
+    __tablename__ = "post_images"
+    id = Column(Integer, primary_key=True, index=True)
+    post_id = Column(Integer, ForeignKey("posts.id"))
+    image_url = Column(String(500))
+    post = relationship("Post", back_populates="images")
 
 class Comment(Base):
     """댓글 테이블"""
