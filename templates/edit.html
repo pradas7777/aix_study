@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>게시글 수정</h2>
+
+<form method="post" action="/post/{{ post.id }}/edit">
+  <div>
+    <label>제목</label><br>
+    <input type="text" name="title" value="{{ post.title }}" required style="width:100%;">
+  </div>
+
+  <div style="margin-top:10px;">
+    <label>내용</label><br>
+    <textarea name="content" rows="12" required style="width:100%;">{{ post.content }}</textarea>
+  </div>
+
+  <div style="margin-top:10px;">
+    <button type="submit" class="btn">수정 저장</button>
+    <a href="/post/{{ post.id }}" class="btn">취소</a>
+  </div>
+</form>
+{% endblock %}
