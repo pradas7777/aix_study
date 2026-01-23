@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}{{ board_title }} 목록 - AI+X 신림 {% endblock %}
+
+{% block content %}
+<h2>{{ board_title }}</h2>
+
+<div style="margin-bottom: 20px; text-align: left;">
+    <a href="/board/{{ post_type }}/write" class="btn">글 쓰러 가기</a>
+</div>
+
+{% for post in posts %}
+<div class="card">
+    <h3>
+        <a href="/post/{{ post.id }}">{{ post.title }}</a>
+        
+        {# 관리자일 때만 삭제 버튼 표시 #}
+        {% if is_admin %}
+        <form method="post" action="/post/{{ post.id }}/delete" 
+              onsubmit="return confirm('정말 삭제하시겠습니까?');" 
+              style="display: inline; float: right;">
+          <button type="submit" class="admin-delete-btn">🗑 삭제</button>
+        </form>
+        {% endif %}
+    </h3>
+    <div class="meta">
+        작성자: {{ post.author.nickname }} | {{ post.created_at.strftime('%Y-%m-%d') }}
+    </div>
+</div>
+{% else %}
+<p>등록된 게시글이 없습니다.</p>
+{% endfor %}
+
+<div style="margin-top: 30px;">
+    <a href="/" class="btn btn-small" style="background: #95a5a6;">메인으로 돌아가기</a>
+</div>
+{% endblock %}

@@ -111,24 +111,4 @@ function imageHandler() {
         content.value = quill.root.innerHTML;
     };
 </script>
-
-
-
-{% for post in posts %}
-<div class="card">
-    <h3>
-        <a href="/post/{{ post.id }}">{{ post.title }}</a>
-        
-        {# 관리자일 때만 삭제 버튼을 보여줍니다 #}
-        {% if is_admin %}
-        <form method="post" action="/post/{{ post.id }}/delete" 
-              onsubmit="return confirm('정말 삭제하시겠습니까?');" 
-              style="display: inline; float: right;">
-          <button type="submit" class="admin-delete-btn">🗑 삭제</button>
-        </form>
-        {% endif %}
-    </h3>
-    
-</div>
-{% endfor %}
 {% endblock %}

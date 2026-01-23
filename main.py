@@ -134,7 +134,7 @@ async def board_list(
     titles = {"summary": "수업 요약", "qna": "질문 답변", "lounge": "자유 게시판"}
     board_title = titles.get(post_type, "게시판")
     
-    return templates.TemplateResponse("board.html", {
+    return templates.TemplateResponse("list.html", {
         "request": request, 
         "posts": posts, 
         "post_type": post_type, 
@@ -142,7 +142,24 @@ async def board_list(
         "visitor": visitor,
         "is_admin": is_admin # 템플릿(HTML)에서 쓸 수 있도록 전달합니다.
     })
-
+@app.get("/board/{post_type}/write", response_class=HTMLResponse)
+async def write_page(
+    post_type: str, 
+    request: Request, 
+    db: Session = Depends(get_db),
+    visitor_uuid: Optional[str] = Cookie(None)
+):
+    visitor, _ = get_or_create_visitor(db, visitor_uuid)
+    titles = {"summary": "수업 요약", "qna": "질문 답변", "lounge": "자유 게시판"}
+    board_title = titles.get(post_type, "게시판")
+    
+    # 기존의 글쓰기 폼이 들어있는 board.html을 보여줍니다.
+    return templates.TemplateResponse("board.html", {
+        "request": request, 
+        "post_type": post_type, 
+        "board_title": board_title,
+        "visitor": visitor
+    })
 @app.get("/post/{post_id}", response_class=HTMLResponse)
 async def post_detail(
     post_id: int, 
