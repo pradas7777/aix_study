@@ -8,7 +8,7 @@
 
 <div class="card" style="background: #f0f7ff;">
     <div class="card" style="background: #f0f7ff;">
-    <h3>새 글 쓰기 (최대 5장)</h3>
+    <h3>새 글 쓰기 </h3>
     <form action="/post/create" method="post" enctype="multipart/form-data" id="postForm">
         <input type="hidden" name="type" value="{{ post_type }}">
         <div><input type="text" name="title" placeholder="제목" required></div>
@@ -24,7 +24,7 @@
         <button type="submit" class="btn" style="margin-top: 10px;">올리기</button>
     </form>
 </div>
-<script>
+<script> // 에디터부분
     const dropZone = document.getElementById('drop-zone');
     const fileInput = document.getElementById('file-input');
     const previewContainer = document.getElementById('preview-container');
@@ -90,10 +90,6 @@
         {% endif %}
     </h3>
     
-    <div class="meta">
-        작성자: {{ post.author.nickname }} | 날짜: {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}
-    </div>
-    <p>{{ post.content[:100] }}{% if post.content|length > 100 %}...{% endif %}</p>
 </div>
 {% endfor %}
 {% endblock %}
