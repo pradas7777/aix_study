@@ -145,6 +145,13 @@ input[type="text"], textarea {
     body {
         font-size: 18px;
     }
+    header h1 {
+        font-size: 32px; /* 60px이었던 제목을 모바일에서는 32px로 조절합니다. */
+        word-break: keep-all; /* 단어가 잘리지 않고 통째로 줄바꿈되게 합니다. */
+    }
+    header h4 {
+        font-size: 16px; /* 날짜 부분도 모바일에 맞춰 살짝 줄여줍니다. */
+    }
 }
 .admin-delete-btn {
   background: #c0392b;
