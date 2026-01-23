@@ -20,6 +20,12 @@
     </div>
 </article>
 
+<div style="margin-top: 20px; margin-bottom: 20px;">
+  {% if is_admin or post.visitor_id == visitor.id %}
+    <a class="btn btn-small" href="/post/{{ post.id }}/edit">수정</a>
+  {% endif %}
+</div>
+
 <div class="comment-section">
     <h3>댓글 ({{ post.comments|length }})</h3>
     
