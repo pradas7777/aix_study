@@ -181,7 +181,8 @@ async def post_detail(
         "request": request, 
         "post": post, 
         "visitor": visitor,
-        "is_admin": is_admin # 템플릿에 관리자 여부 전달
+        "is_admin": is_admin, # 템플릿에 관리자 여부 전달
+        "current_visitor_id": visitor.id
     })
 # --- API (데이터 처리) ---
 
@@ -286,6 +287,41 @@ async def create_comment(
         visitor_id=visitor.id
     )
     db.add(new_comment)
+    db.commit()
+    return RedirectResponse(url=f"/post/{post_id}", status_code=303)
+
+@app.post("/comment/{comment_id}/delete")
+async def delete_comment(
+    comment_id: int,
+    db: Session = Depends(get_db),
+    admin_token: Optional[str] = Cookie(None),
+    visitor_uuid: Optional[str] = Cookie(None),
+):
+    # 0) 댓글 조회
+    comment = db.query(models.Comment).filter(models.Comment.id == comment_id).first()
+    if not comment:
+        raise HTTPException(status_code=404, detail="댓글을 찾을 수 없습니다.")
+
+    # 1) 관리자 검사 (우선)
+    try:
+        check_admin(admin_token)  # admin_token != ADMIN_TOKEN 이면 403 발생
+        post_id = comment.post_id
+        db.delete(comment)
+        db.commit()
+        return RedirectResponse(url=f"/post/{post_id}", status_code=303)
+    except HTTPException:
+        pass  # 관리자 아니면 작성자 검사로 진행
+
+    # 2) 작성자 검사
+    if not visitor_uuid:
+        raise HTTPException(status_code=403, detail="삭제 권한이 없습니다.")
+
+    visitor, _ = get_or_create_visitor(db, visitor_uuid)
+    if comment.visitor_id != visitor.id:
+        raise HTTPException(status_code=403, detail="삭제 권한이 없습니다.")
+
+    post_id = comment.post_id
+    db.delete(comment)
     db.commit()
     return RedirectResponse(url=f"/post/{post_id}", status_code=303)
 

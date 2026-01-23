@@ -25,10 +25,30 @@
     
     {% for comment in post.comments %}
     <div class="comment">
-        <strong>{{ comment.author.nickname }}</strong>: {{ comment.content }}
-        <div class="meta" style="font-size: 14px;">{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+        <div class="comment-row">
+
+            <div class="comment-body">
+                <div>
+                    <strong>{{ comment.author.nickname }}</strong>:
+                    {{ comment.content }}
+                </div>
+                <div class="meta">
+                    {{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}
+                </div>
+            </div>
+
+            {% if is_admin or (current_visitor_id and comment.visitor_id == current_visitor_id) %}
+            <form method="post"
+                action="/comment/{{ comment.id }}/delete"
+                onsubmit="return confirm('정말 삭제하시겠습니까?');"
+                class="comment-delete-form">
+            <button type="submit" class="comment-delete-btn">🗑삭제</button>
+        </form>
+        {% endif %}
+
     </div>
-    {% endfor %}
+</div>
+{% endfor %}
     
     <form action="/post/{{ post.id }}/comment" method="post" style="margin-top: 20px;">
         <textarea name="content" rows="2" placeholder="댓글을 남겨보세요" required></textarea>

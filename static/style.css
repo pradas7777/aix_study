@@ -136,6 +136,22 @@ input[type="text"], textarea {
     border-radius: 5px;
 }
 
+.comment-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.comment-body{ flex:1; min-width:0; }
+.comment-delete-form{ margin:0; flex-shrink:0; }
+.comment-delete-btn{
+  background:transparent; border:none; cursor:pointer;
+  font-size:25px; opacity:.45; padding:6px 8px; border-radius:8px;
+}
+.comment-delete-btn:hover{
+  opacity:1; color:#e74c3c; background:rgba(231,76,60,.08);
+}
+
 /* 모바일 대응 */
 @media (max-width: 600px) {
     .container {
