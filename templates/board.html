@@ -19,7 +19,7 @@
         </div>
         <div id="preview-container" style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;"></div>
 
-        <div id="editor" style="height: 200px; background: white; margin-top: 10px;"></div>
+        <div id="editor" style="min-height: 200px; height: auto; background: white; margin-top: 10px;"></div>
         <input type="hidden" name="content" id="content">
         <button type="submit" class="btn" style="margin-top: 10px;">올리기</button>
     </form>
@@ -68,8 +68,8 @@
                 container: [
                 [{ 'header': [1, 2, 3, false] }], // 제목 크기 설정
                 ['bold', 'italic', 'underline', 'strike'], // 굵게, 기울임 등
-                [{ 'color': [] }, { 'background': [] }], // ⭐ 색상 및 배경색 추가!
-                ['image', 'link'], // ⭐ 이미지 삽입 버튼 추가!
+                [{ 'color': [] }, { 'background': [] }], //  색상 및 배경색 추가!
+                ['image', 'link'], // 이미지 삽입 버튼 추가!
                 ['clean'] // 서식 지우기
             ],
             handlers: {
