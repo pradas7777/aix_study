@@ -19,7 +19,7 @@
             <div style="background: #96d5ff; padding: 10px; border-radius: 5px; font-size: 16px;">
                 내 닉네임: <strong>{{ visitor.nickname }}</strong>
                 <form action="/visitor/nickname" method="post" style="display: inline; margin-left: 10px;">
-                    <input type="text" name="nickname" placeholder="변경할 닉네임" style="width: 120px; font-size: 14px; padding: 2px;">
+                    <input type="text" name="nickname" placeholder="변경할 닉네임" required style="width: 120px; font-size: 14px; padding: 2px;">
                     <button type="submit" class="btn btn-small">변경</button>
                 </form>
             </div>
