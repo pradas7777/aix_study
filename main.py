@@ -241,7 +241,18 @@ async def delete_post(
 
     return RedirectResponse(url="/", status_code=303)
 
-
+@app.post("/post/image/upload")
+async def upload_editor_image(file: UploadFile = File(...)):
+    # 1. 파일에 고유한 이름을 붙입니다.
+    file_name = f"{uuid.uuid4()}_{file.filename}"
+    file_path = os.path.join(UPLOAD_DIR, file_name)
+    
+    # 2. 서버의 uploads 폴더에 실제로 파일을 저장합니다.
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    
+    # 3. 에디터가 이미지 주소로 사용할 수 있게 경로를 반환합니다.
+    return {"url": f"/static/uploads/{file_name}"}
 
 @app.post("/post/{post_id}/comment")
 async def create_comment(

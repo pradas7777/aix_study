@@ -14,7 +14,7 @@
         <div><input type="text" name="title" placeholder="제목" required></div>
         
         <div id="drop-zone" style="border: 2px dashed #3498db; padding: 20px; text-align: center; background: #fff; cursor: pointer;">
-            파일을 드래그하거나 클릭하여 이미지를 선택하세요 (최대 5장)
+            파일을 드래그하거나 클릭하여 이미지를 선택하세요 (최대 5장, 본문 첨부시 아래 이미지 아이콘 클릭!)
             <input type="file" name="images" id="file-input" multiple accept="image/*" style="display: none;">
         </div>
         <div id="preview-container" style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;"></div>
@@ -24,7 +24,7 @@
         <button type="submit" class="btn" style="margin-top: 10px;">올리기</button>
     </form>
 </div>
-<script> // 에디터부분
+<script> 
     const dropZone = document.getElementById('drop-zone');
     const fileInput = document.getElementById('file-input');
     const previewContainer = document.getElementById('preview-container');
@@ -62,8 +62,47 @@
 <script>
     var quill = new Quill('#editor', {
         theme: 'snow',
-        placeholder: '내용을 입력하세요...'
-    });
+        placeholder: '내용을 입력하세용',
+        modules: {
+            toolbar: {
+                container: [
+                [{ 'header': [1, 2, 3, false] }], // 제목 크기 설정
+                ['bold', 'italic', 'underline', 'strike'], // 굵게, 기울임 등
+                [{ 'color': [] }, { 'background': [] }], // ⭐ 색상 및 배경색 추가!
+                ['image', 'link'], // ⭐ 이미지 삽입 버튼 추가!
+                ['clean'] // 서식 지우기
+            ],
+            handlers: {
+                image: imageHandler // 이미지를 클릭했을 때 실행할 함수 연결
+            }
+        }
+    }
+});
+
+// 이미지를 서버로 전송하는 함수
+function imageHandler() {
+    const input = document.createElement('input');
+    input.setAttribute('type', 'file');
+    input.setAttribute('accept', 'image/*');
+    input.click();
+
+    input.onchange = async () => {
+        const file = input.files[0];
+        const formData = new FormData();
+        formData.append('file', file);
+
+        // 아까 만든 Python API로 이미지를 보냅니다.
+        const res = await fetch('/post/image/upload', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await res.json();
+        
+        // 에디터의 현재 커서 위치에 이미지 주소를 삽입합니다.
+        const range = quill.getSelection();
+        quill.insertEmbed(range.index, 'image', data.url);
+    };
+}
 
     // 폼 제출 시 에디터 내용을 숨겨진 input에 담아줍니다.
     var form = document.getElementById('postForm');
