@@ -1,22 +1,91 @@
 {% extends "base.html" %}
 
+{% block title %}게시글 수정{% endblock %}
+
 {% block content %}
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+
 <h2>게시글 수정</h2>
 
-<form method="post" action="/post/{{ post.id }}/edit">
-  <div>
-    <label>제목</label><br>
-    <input type="text" name="title" value="{{ post.title }}" required style="width:100%;">
-  </div>
+<div class="card">
+  <form action="/post/{{ post.id }}/edit" method="post" id="editForm">
 
-  <div style="margin-top:10px;">
-    <label>내용</label><br>
-    <textarea name="content" rows="12" required style="width:100%;">{{ post.content }}</textarea>
-  </div>
+    <!-- 제목 수정 -->
+    <div style="margin-bottom: 10px;">
+      <input type="text" name="title" value="{{ post.title }}" required style="width: 100%; padding: 10px;">
+    </div>
 
-  <div style="margin-top:10px;">
-    <button type="submit" class="btn">수정 저장</button>
-    <a href="/post/{{ post.id }}" class="btn">취소</a>
-  </div>
-</form>
+    <!-- ✅ Quill Editor -->
+    <div id="editor" style="height: 250px; background: white;"></div>
+
+    <!-- ✅ 실제로 서버에 보내는 content -->
+    <input type="hidden" name="content" id="content">
+
+    <div style="margin-top: 10px;">
+      <button type="submit" class="btn">수정 완료</button>
+      <a href="/post/{{ post.id }}" class="btn" style="background:#777;">취소</a>
+    </div>
+  </form>
+</div>
+
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+
+<script>
+  // ✅ 작성 페이지(board.html)랑 동일한 툴바 구성
+  var quill = new Quill('#editor', {
+    theme: 'snow',
+    placeholder: '내용을 수정하세요',
+    modules: {
+      toolbar: {
+        container: [
+          [{ 'header': [1, 2, 3, false] }],
+          ['bold', 'italic', 'underline', 'strike'],
+          [{ 'color': [] }, { 'background': [] }],
+          ['image', 'link'],
+          ['clean']
+        ],
+        handlers: {
+          image: imageHandler
+        }
+      }
+    }
+  });
+
+  // ✅ 기존 게시글 내용을 Quill에 HTML로 로드
+  // ❗ 여기서 tojson을 쓰는 이유:
+  // - 문자열 안전하게 JS에 전달
+  // - <p>, <hr> 같은 태그가 "글자"로 안 보이고 렌더링되게 함
+  const existingHTML = {{ (post.content or "") | tojson }};
+  quill.clipboard.dangerouslyPasteHTML(existingHTML);
+
+  // ✅ 이미지 업로드 핸들러 (작성 페이지랑 동일)
+  function imageHandler() {
+    const input = document.createElement('input');
+    input.setAttribute('type', 'file');
+    input.setAttribute('accept', 'image/*');
+    input.click();
+
+    input.onchange = async () => {
+      const file = input.files[0];
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/post/image/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await res.json();
+      const range = quill.getSelection();
+      quill.insertEmbed(range.index, 'image', data.url);
+    };
+  }
+
+  // ✅ 제출할 때 Quill 내용을 hidden input에 담아서 서버로 전송
+  const form = document.getElementById('editForm');
+  form.onsubmit = function() {
+    document.getElementById('content').value = quill.root.innerHTML;
+  };
+</script>
+
 {% endblock %}
