@@ -24,8 +24,7 @@ class Post(Base):
     created_at = Column(DateTime, default=datetime.now)
     visitor_id = Column(Integer, ForeignKey("visitors.id"))
     author = relationship("Visitor", back_populates="posts")
-    
-    # 💡 이미지들과의 관계 설정 (1:N)
+    files = relationship("PostFile", back_populates="post")
     images = relationship("PostImage", back_populates="post", cascade="all, delete-orphan")
     comments = relationship("Comment", back_populates="post", cascade="all, delete-orphan")
 
@@ -49,3 +48,15 @@ class Comment(Base):
     
     post = relationship("Post", back_populates="comments")
     author = relationship("Visitor", back_populates="comments")
+
+#파일첨부 기능 추가
+class PostFile(Base):
+    __tablename__ = "post_files"
+
+    id = Column(Integer, primary_key=True, index=True)
+    post_id = Column(Integer, ForeignKey("posts.id"))
+    filename = Column(String(255))    
+    original_name = Column(String(255)) 
+
+    post = relationship("Post", back_populates="files")
+

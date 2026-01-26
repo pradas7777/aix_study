@@ -26,7 +26,17 @@
     <a class="btn btn-small" href="/post/{{ post.id }}/edit">수정</a>
   {% endif %}
 </div>
-
+{% if post.files %}
+<div style="margin-top: 30px; padding: 15px; background: #f8f9fa; border-radius: 10px;">
+    <h5 style="margin: 0 0 10px 0;">📎 첨부파일</h5>
+    {% for file in post.files %}
+    <a href="/static/uploads/{{ file.filename }}" download="{{ file.original_name }}" 
+       style="color: #3498db; stext-decoration: none;">
+        {{ file.original_name }} (다운로드)
+    </a>
+    {% endfor %}
+</div>
+{% endif %}
 <div class="comment-section">
     <h3>댓글 ({{ post.comments|length }})</h3>
     

@@ -15,6 +15,7 @@ from fastapi import File, UploadFile
 import shutil 
 from typing import List
 
+
 UPLOAD_DIR = "static/uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 ADMIN_TOKEN = "super-admin-token"
@@ -251,6 +252,7 @@ async def create_post(
     title: str = Form(...),
     content: str = Form(...),
     images: List[UploadFile] = File(None), # 여러 파일을 리스트로 받습니다.
+    file: UploadFile = File(None),
     db: Session = Depends(get_db),
     visitor_uuid: Optional[str] = Cookie(None)
 ):
@@ -291,7 +293,26 @@ async def create_post(
                 )
                 db.add(new_image)
 
-    # 6. 모든 변경사항을 최종적으로 DB에 반영합니다.
+    # 6. 일반 첨부파일이 있다면 처리합니다
+    if file and file.filename and file.filename.strip():
+        # 서버에 저장할 고유한 파일 이름을 만듭니다.
+        gen_file_name = f"{uuid.uuid4()}_{file.filename}"
+        gen_file_path = os.path.join(UPLOAD_DIR, gen_file_name)
+        
+        # 파일을 실제로 서버의 uploads 폴더에 저장합니다.
+        with open(gen_file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        
+        # DB의 파일 테이블(PostFile)에 정보를 저장합니다.
+        new_file = models.PostFile(
+            post_id=new_post.id,
+            filename=gen_file_name,      # 서버 저장용 이름
+            original_name=file.filename  # 사용자가 올린 원래 이름 (다운로드용)
+        )
+        db.add(new_file)
+
+
+    # 7. 모든 변경사항을 최종적으로 DB에 반영합니다.
     db.commit()
 
     # 완료 후 해당 게시판 목록으로 이동합니다.

@@ -9,6 +9,7 @@
 <div class="card" style="background: #f0f7ff;">
     <div class="card" style="background: #f0f7ff;">
     <h3>새 글 쓰기 </h3>
+    
     <form action="/post/create" method="post" enctype="multipart/form-data" id="postForm">
         <input type="hidden" name="type" value="{{ post_type }}">
         <div><input type="text" name="title" placeholder="제목" required></div>
@@ -20,9 +21,15 @@
         <div id="preview-container" style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;"></div>
 
         <div id="editor" style="min-height: 200px; height: auto; background: white; margin-top: 10px;"></div>
+        <div style="margin-top: 20px;">
+        <label for="file-upload" style="font-weight: bold;">📎 파일 첨부:</label>
+        <input type="file" id="file-upload" name="file" style="margin-left: 10px;">
+        <p style="font-size: 14px; color: #666;">(문서, 압축파일 등을 자유롭게 올릴 수 있습니다.)</p>
         <input type="hidden" name="content" id="content">
         <button type="submit" class="btn" style="margin-top: 10px;">올리기</button>
+
     </form>
+</form>
 </div>
 <script> 
     const dropZone = document.getElementById('drop-zone');
