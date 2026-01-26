@@ -43,4 +43,17 @@
     {% endfor %}
     <a href="/board/lounge" class="btn btn-small">더보기</a>
 </section>
+
+<section>
+    <h2>그룹 스터디</h2>
+    {% for post in studies %}
+    <div class="card">
+        <a href="/post/{{ post.id }}"><strong>{{ post.title }}</strong></a>
+        <div class="meta">{{ post.author.nickname }} | {{ post.created_at.strftime('%Y-%m-%d') }}</div>
+    </div>
+    {% else %}
+    <p>아직 게시글이 없습니다.</p>
+    {% endfor %}
+    <a href="/board/study" class="btn btn-small">더보기</a>
+</section>
 {% endblock %}

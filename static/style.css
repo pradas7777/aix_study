@@ -28,6 +28,9 @@ body {
     border-radius: 15px;
     box-shadow: 0 2px 15px rgba(0,0,0,0.1);
     backdrop-filter: blur(5px);
+    overflow-wrap: break-word !important;
+    word-break: break-all;
+    
 }
 .container {
     width: 90%;
@@ -38,6 +41,8 @@ body {
     border-radius: 15px;
     box-shadow: 0 2px 15px rgba(0,0,0,0.1);
     backdrop-filter: blur(5px);
+    overflow-wrap: break-word !important;
+    word-break: break-all;
 }
 
 header h1 {
@@ -101,7 +106,7 @@ input[type="text"], textarea {
 
 .nav-menu {
     display: flex;
-    gap: 50px;
+    gap: 30px;
     margin-bottom: 20px;
     flex-wrap: wrap;
 }
@@ -112,7 +117,7 @@ input[type="text"], textarea {
     color: #333;                /* 글자색을 진한 회색으로 바꿉니다. */
     border: 1px solid #dee2e6;  /* 얇은 회색 테두리를 만듭니다. */
     border-radius: 50px;        /* 모서리를 둥글게 깎아 알약 모양으로 만듭니다. */
-    font-size: 25px;            /* 글자 크기를 조절합니다. */
+    font-size: 23px;            /* 글자 크기를 조절합니다. */
     transition: all 0.3s;       /* 마우스를 올렸을 때 부드럽게 변하도록 설정합니다. */
 }
 .nav-menu a:hover {
@@ -177,4 +182,8 @@ input[type="text"], textarea {
   border-radius: 6px;
   font-size: 14px;
   cursor: pointer;
+}
+
+article * {
+    white-space: pre-wrap !important;     /* '줄바꿈 금지'태그 달려 있는 글 (복사글)도 무시해서 강제 줄바꿈시키기 */
 }
