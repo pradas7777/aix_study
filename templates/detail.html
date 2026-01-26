@@ -55,17 +55,17 @@
 
             {% if is_admin or (current_visitor_id and comment.visitor_id == current_visitor_id) %}
             <form method="post"
-                action="/comment/{{ comment.id }}/delete"
-                onsubmit="return confirm('정말 삭제하시겠습니까?');"
-                class="comment-delete-form">
-            <button type="submit" class="comment-delete-btn">🗑 삭제</button>
+                  action="/comment/{{ comment.id }}/delete"
+                  onsubmit="return confirm('정말 삭제하시겠습니까?');"
+                  class="comment-delete-form">
+                <button type="submit" class="comment-delete-btn">🗑 삭제</button>
             </form>
             {% endif %}
+
         </div>
     </div>
+    {% endfor %}
 </div>
-{% endfor %}
-    
     <form action="/post/{{ post.id }}/comment" method="post" style="margin-top: 20px;">
         <textarea name="content" rows="2" placeholder="댓글을 남겨보세요" required></textarea>
         <button type="submit" class="btn btn-small" style="margin-top: 5px;">댓글 달기</button>
