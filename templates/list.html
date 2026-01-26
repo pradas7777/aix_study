@@ -17,14 +17,14 @@
         {# 관리자일 때만 삭제 버튼 표시 #}
         {% if is_admin %}
         <form method="post" action="/post/{{ post.id }}/delete" 
-              onsubmit="return confirm('정말 삭제하시겠습니까?');" 
-              style="display: inline; float: right;">
-          <button type="submit" class="admin-delete-btn">🗑 삭제</button>
+                onsubmit="return confirm('정말 삭제하시겠습니까?');"
+                style="display: inline; float: right;">
+            <button type="submit" class="admin-delete-btn">🗑 삭제</button>
         </form>
         {% endif %}
     </h3>
     <div class="meta">
-        작성자: {{ post.author.nickname }} | {{ post.created_at.strftime('%Y-%m-%d') }}
+        작성자: {{ post.author.nickname }} | {{ post.created_at.strftime('%Y-%m-%d') }}| {% include "_views.html" %}
     </div>
 </div>
 {% else %}
