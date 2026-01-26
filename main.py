@@ -226,7 +226,32 @@ async def edit_post_page(
         "visitor": visitor,
         "is_admin": is_admin
     })
+@app.post("/post/{post_id}/edit")
+async def edit_post_save(
+    post_id: int,
+    title: str = Form(...),
+    content: str = Form(...),
+    db: Session = Depends(get_db),
+    admin_token: Optional[str] = Cookie(None),
+    visitor_uuid: Optional[str] = Cookie(None),
+):
+    visitor, v_uuid = get_or_create_visitor(db, visitor_uuid)
 
+    is_admin = admin_token == ADMIN_TOKEN
+
+    post = db.query(models.Post).filter(models.Post.id == post_id).first()
+    if not post:
+        raise HTTPException(status_code=404, detail="게시글을 찾을 수 없습니다.")
+
+    # ✅ 권한 체크: 관리자 OR 작성자만 저장 가능
+    if (not is_admin) and (post.visitor_id != visitor.id):
+        raise HTTPException(status_code=403, detail="수정 권한이 없습니다.")
+
+    post.title = title
+    post.content = content
+    db.commit()
+
+    return RedirectResponse(url=f"/post/{post_id}", status_code=303)
 
 @app.post("/post/create")
 async def create_post(
