@@ -4,10 +4,9 @@
 
 {% block content %}
 
-
 <article>
     <h2>{{ post.title }}</h2>
-    <div class="meta">작성자: {{ post.author.nickname }} | {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+    <div class="meta">작성자: {{ post.author.nickname }} | {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}| {% include "_views.html" %}</div>
     
     <div class="image-gallery" style="margin: 20px 0;">
         {% for img in post.images %}
@@ -59,10 +58,10 @@
                 action="/comment/{{ comment.id }}/delete"
                 onsubmit="return confirm('정말 삭제하시겠습니까?');"
                 class="comment-delete-form">
-            <button type="submit" class="comment-delete-btn">🗑삭제</button>
-        </form>
-        {% endif %}
-
+            <button type="submit" class="comment-delete-btn">🗑 삭제</button>
+            </form>
+            {% endif %}
+        </div>
     </div>
 </div>
 {% endfor %}

@@ -150,8 +150,13 @@ input[type="text"], textarea {
 .comment-body{ flex:1; min-width:0; }
 .comment-delete-form{ margin:0; flex-shrink:0; }
 .comment-delete-btn{
-  background:transparent; border:none; cursor:pointer;
-  font-size:25px; opacity:.45; padding:6px 8px; border-radius:8px;
+  background: #c0392b;
+  color: white;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
 }
 .comment-delete-btn:hover{
   opacity:1; color:#e74c3c; background:rgba(231,76,60,.08);

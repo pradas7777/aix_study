@@ -6,7 +6,7 @@
     {% for post in summaries %}
     <div class="card">
         <a href="/post/{{ post.id }}"><strong>{{ post.title }}</strong></a>
-        <div class="meta">{{ post.created_at.strftime('%Y-%m-%d') }}</div>
+        <div class="meta">{{ post.created_at.strftime('%Y-%m-%d') }}| {% include "_views.html" %}</div>
     </div>
     {% else %}
     <p>아직 게시글이 없습니다.</p>
@@ -21,7 +21,7 @@
     {% for post in qnas %}
     <div class="card">
         <a href="/post/{{ post.id }}"><strong>{{ post.title }}</strong></a>
-        <div class="meta">{{ post.author.nickname }} | {{ post.created_at.strftime('%Y-%m-%d') }}</div>
+        <div class="meta">{{ post.author.nickname }} | {{ post.created_at.strftime('%Y-%m-%d') }}| {% include "_views.html" %}</div>
     </div>
     {% else %}
     <p>아직 질문이 없습니다.</p>
@@ -36,7 +36,7 @@
     {% for post in lounges %}
     <div class="card">
         <a href="/post/{{ post.id }}"><strong>{{ post.title }}</strong></a>
-        <div class="meta">{{ post.author.nickname }} | {{ post.created_at.strftime('%Y-%m-%d') }}</div>
+        <div class="meta">{{ post.author.nickname }} | {{ post.created_at.strftime('%Y-%m-%d') }}| {% include "_views.html" %}</div>
     </div>
     {% else %}
     <p>아직 게시글이 없습니다.</p>
@@ -49,7 +49,7 @@
     {% for post in studies %}
     <div class="card">
         <a href="/post/{{ post.id }}"><strong>{{ post.title }}</strong></a>
-        <div class="meta">{{ post.author.nickname }} | {{ post.created_at.strftime('%Y-%m-%d') }}</div>
+        <div class="meta">{{ post.author.nickname }} | {{ post.created_at.strftime('%Y-%m-%d') }}| {% include "_views.html" %}</div>
     </div>
     {% else %}
     <p>아직 게시글이 없습니다.</p>

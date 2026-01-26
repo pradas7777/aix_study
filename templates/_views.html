@@ -1,0 +1,6 @@
+{# 조회수 표시용 partial (include 전용) #}
+{% if post is defined %}
+  <span class="views">조회수 {{ post.views }}</span>
+{% elif p is defined %}
+  <span class="views">조회수 {{ p.views }}</span>
+{% endif %}
