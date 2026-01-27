@@ -19,6 +19,7 @@
         <form method="post" action="/post/{{ post.id }}/delete" 
                 onsubmit="return confirm('정말 삭제하시겠습니까?');"
                 style="display: inline; float: right;">
+            <input type="hidden" name="post_type" value="{{ post_type }}">
             <button type="submit" class="admin-delete-btn">🗑 삭제</button>
         </form>
         {% endif %}
