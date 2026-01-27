@@ -14,7 +14,7 @@ from fastapi.responses import RedirectResponse
 from fastapi import File, UploadFile 
 import shutil 
 from typing import List
-
+from sqlalchemy.orm import joinedload
 
 UPLOAD_DIR = "static/uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -178,25 +178,37 @@ async def post_detail(
     post_id: int, 
     request: Request, 
     db: Session = Depends(get_db), 
-    admin_token: Optional[str] = Cookie(None), # 관리자 토큰 가져오기
+    admin_token: Optional[str] = Cookie(None),
     visitor_uuid: Optional[str] = Cookie(None)
 ):
     visitor, v_uuid = get_or_create_visitor(db, visitor_uuid)
-    
-    # 관리자 여부 확인
     is_admin = admin_token == ADMIN_TOKEN 
     
     post = db.query(models.Post).filter(models.Post.id == post_id).first()
     if not post:
         raise HTTPException(status_code=404, detail="게시글을 찾을 수 없습니다.")
     
+    # ✅ 최상위 댓글만 가져오기 (대댓글은 replies 관계를 통해 접근)
+    root_comments = (
+        db.query(models.Comment)
+        .filter(models.Comment.post_id == post_id, models.Comment.parent_id.is_(None))
+        .options(
+            joinedload(models.Comment.author),
+            joinedload(models.Comment.replies).joinedload(models.Comment.author),
+        )
+        .order_by(models.Comment.created_at.asc())
+        .all()
+    )
+
     return templates.TemplateResponse("detail.html", {
         "request": request, 
         "post": post, 
         "visitor": visitor,
-        "is_admin": is_admin, # 템플릿에 관리자 여부 전달
-        "current_visitor_id": visitor.id
+        "is_admin": is_admin,
+        "current_visitor_id": visitor.id,
+        "root_comments": root_comments,  # 이 리스트를 사용합니다.
     })
+
 # --- API (데이터 처리) ---
 @app.get("/post/{post_id}/edit", response_class=HTMLResponse)
 async def edit_post_page(
@@ -362,19 +374,35 @@ async def upload_editor_image(file: UploadFile = File(...)):
 async def create_comment(
     post_id: int,
     content: str = Form(...),
+    parent_id: Optional[int] = Form(None),  # ✅ 대댓글 기능 추가
     db: Session = Depends(get_db),
     visitor_uuid: Optional[str] = Cookie(None)
 ):
     visitor, _ = get_or_create_visitor(db, visitor_uuid)
     
+    # parent_id 유효성 검사
+    if parent_id is not None:
+        parent = db.query(models.Comment).filter(
+            models.Comment.id == parent_id,
+            models.Comment.post_id == post_id
+        ).first()
+        if not parent:
+            raise HTTPException(status_code=404, detail="원본 댓글을 찾을 수 없습니다.")
+
+        # (선택) 1단계만 허용
+        # if parent.parent_id is not None:
+        #     raise HTTPException(status_code=400, detail="대댓글의 대댓글은 허용하지 않습니다.")
+
     new_comment = models.Comment(
         content=content,
         post_id=post_id,
-        visitor_id=visitor.id
+        visitor_id=visitor.id,
+        parent_id=parent_id
     )
     db.add(new_comment)
     db.commit()
-    return RedirectResponse(url=f"/post/{post_id}", status_code=303)
+
+    return RedirectResponse(url=f"/post/{post_id}", status_code=303)    
 
 @app.post("/comment/{comment_id}/delete")
 async def delete_comment(

@@ -36,18 +36,31 @@ class PostImage(Base):
     post = relationship("Post", back_populates="images")
 
 class Comment(Base):
-    """댓글 테이블"""
+    """댓글 및 대댓글 테이블"""
     __tablename__ = "comments"
 
     id = Column(Integer, primary_key=True, index=True)
     content = Column(Text, nullable=False)
     created_at = Column(DateTime, default=datetime.now)
-    
-    post_id = Column(Integer, ForeignKey("posts.id"))
+
+    post_id = Column(Integer, ForeignKey("posts.id", ondelete="CASCADE"))
     visitor_id = Column(Integer, ForeignKey("visitors.id"))
     
+    # ✅ 대댓글용: 부모 댓글 id
+    parent_id = Column(Integer, ForeignKey("comments.id", ondelete="CASCADE"), nullable=True)
+
     post = relationship("Post", back_populates="comments")
     author = relationship("Visitor", back_populates="comments")
+
+    # ✅ 셀프 참조 관계 설정
+    parent = relationship("Comment", remote_side=[id], back_populates="replies")
+    replies = relationship(
+        "Comment",
+        back_populates="parent",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        order_by="Comment.created_at"
+    )
 
 #파일첨부 기능 추가
 class PostFile(Base):
