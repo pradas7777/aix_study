@@ -75,7 +75,7 @@ a {
 }
 
 .meta {
-    font-size: 16px;
+    font-size: 18px;
     color: #888;
 }
 
@@ -176,7 +176,25 @@ input[type="text"], textarea {
   font-size: 14px;
   cursor: pointer;
 }
+/* 2. 게시글 본문 영역에 대한 정밀 설정 */
+.post-body {
+    width: 100%;
+    /* 아주 긴 영문이나 숫자, URL도 컨테이너 너비에 맞춰 강제로 줄바꿈합니다. */
+    word-break: break-all; 
+    overflow-wrap: break-word;
+    /* 텍스트가 박스 밖으로 나가지 않도록 숨김 처리 및 자동 줄바꿈을 지원합니다. */
+    overflow: hidden;
+}
 
-article * {
-    white-space: pre-wrap !important;     /* '줄바꿈 금지'태그 달려 있는 글 (복사글)도 무시해서 강제 줄바꿈시키기 */
+/* 3. 본문 내부의 모든 요소들이 부모 너비를 넘지 못하게 고정합니다. */
+.post-body * {
+    max-width: 100% !important;
+    /* 복사해 온 글에 포함된 '줄바꿈 금지' 설정을 무력화하면서도 불필요한 공백은 무시합니다. */
+    white-space: pre-wrap; 
+    box-sizing: border-box !important;
+}
+
+/* 4. 복사해 온 글에 포함된 이미지나 테이블이 삐져나가는 것을 방지합니다. */
+.post-body img, .post-body table, .post-body div {
+    height: auto !important;
 }
