@@ -4,6 +4,16 @@
 
 {% block content %}
 <h2>{{ board_title }}</h2>
+<form method="get" action="/board/{{ post_type }}" style="margin-bottom: 20px;">
+    <input
+        type="text"
+        name="q"
+        value="{{ q or '' }}"
+        placeholder="제목 / 내용"
+        style="padding: 6px; width: 220px;"
+    >
+    <button type="submit" class="btn btn-small">검색</button>
+</form>
 
 <div style="margin-bottom: 20px; text-align: left;">
     <a href="/board/{{ post_type }}/write" class="btn">글 쓰러 가기</a>

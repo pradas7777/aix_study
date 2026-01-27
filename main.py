@@ -1,9 +1,9 @@
 import uuid
-from fastapi import FastAPI, Request, Depends, Form, HTTPException, Response, Cookie
+from fastapi import FastAPI, Request, Depends, Form, HTTPException, Response, Cookie, Query
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from sqlalchemy import update
+from sqlalchemy import update, or_
 from sqlalchemy.orm import Session
 from typing import Optional
 import os
@@ -101,6 +101,11 @@ async def index(
         .order_by(models.Post.created_at.desc())\
         .limit(5).all()    
 
+    updates = db.query(models.Post)\
+        .filter(models.Post.type == "updates")\
+        .order_by(models.Post.created_at.desc())\
+        .limit(5).all()
+
     response = templates.TemplateResponse(
         "index.html",
         {
@@ -111,6 +116,7 @@ async def index(
             "qnas": qnas,
             "lounges": lounges,
             "studies": studies,
+            "updates": updates,
         }
     )
 
@@ -124,12 +130,15 @@ async def index(
 
     return response
 
+
+
 @app.get("/board/{post_type}", response_class=HTMLResponse)
 async def board_list(
-    post_type: str, 
-    request: Request, 
-    db: Session = Depends(get_db), 
-    admin_token: Optional[str] = Cookie(None), # 쿠키에서 관리자 토큰을 가져옵니다.
+    post_type: str,
+    request: Request,
+    q: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+    admin_token: Optional[str] = Cookie(None),
     visitor_uuid: Optional[str] = Cookie(None)
 ):
     visitor, v_uuid = get_or_create_visitor(db, visitor_uuid)
@@ -139,17 +148,19 @@ async def board_list(
     
     posts = db.query(models.Post).filter(models.Post.type == post_type).order_by(models.Post.created_at.desc()).all()
     
-    titles = {"summary": "수업 요약", "qna": "질문 답변", "lounge": "자유 게시판", "study" : "그룹 스터디", "suggestion": "사이트 기능 건의"}
+    titles = {"summary": "수업 요약", "qna": "질문 답변", "lounge": "자유 게시판", "study" : "그룹 스터디", "suggestion": "기능 건의"}
     board_title = titles.get(post_type, "게시판")
-    
+
     return templates.TemplateResponse("list.html", {
-        "request": request, 
-        "posts": posts, 
-        "post_type": post_type, 
+        "request": request,
+        "posts": posts,
+        "post_type": post_type,
         "board_title": board_title,
         "visitor": visitor,
-        "is_admin": is_admin # 템플릿(HTML)에서 쓸 수 있도록 전달합니다.
+        "is_admin": is_admin,
+        "q": q,  # ⭐ 검색어 유지
     })
+
 @app.get("/board/{post_type}/write", response_class=HTMLResponse)
 async def write_page(
     post_type: str, 
@@ -158,7 +169,7 @@ async def write_page(
     visitor_uuid: Optional[str] = Cookie(None)
 ):
     visitor, _ = get_or_create_visitor(db, visitor_uuid)
-    titles = {"summary": "수업 요약", "qna": "질문 답변", "lounge": "자유 게시판", "study" : "그룹 스터디", "suggestion": "사이트 기능 건의"}
+    titles = {"summary": "수업 요약", "qna": "질문 답변", "lounge": "자유 게시판", "study" : "그룹 스터디", "suggestion": "기능 건의"}
     board_title = titles.get(post_type, "게시판")
     
     # 기존의 글쓰기 폼이 들어있는 board.html을 보여줍니다.
