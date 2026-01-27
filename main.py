@@ -100,6 +100,11 @@ async def index(
         .order_by(models.Post.created_at.desc())\
         .limit(5).all()    
 
+    updates = db.query(models.Post)\
+        .filter(models.Post.type == "updates")\
+        .order_by(models.Post.created_at.desc())\
+        .limit(5).all()
+
     response = templates.TemplateResponse(
         "index.html",
         {
@@ -110,6 +115,7 @@ async def index(
             "qnas": qnas,
             "lounges": lounges,
             "studies": studies,
+            "updates": updates,
         }
     )
 
@@ -138,7 +144,7 @@ async def board_list(
     
     posts = db.query(models.Post).filter(models.Post.type == post_type).order_by(models.Post.created_at.desc()).all()
     
-    titles = {"summary": "수업 요약", "qna": "질문 답변", "lounge": "자유 게시판", "study" : "그룹 스터디"}
+    titles = {"summary": "수업 요약", "qna": "질문 답변", "lounge": "자유 게시판", "study" : "그룹 스터디", "updates": "업데이트 내역"}
     board_title = titles.get(post_type, "게시판")
     
     return templates.TemplateResponse("list.html", {
@@ -157,7 +163,7 @@ async def write_page(
     visitor_uuid: Optional[str] = Cookie(None)
 ):
     visitor, _ = get_or_create_visitor(db, visitor_uuid)
-    titles = {"summary": "수업 요약", "qna": "질문 답변", "lounge": "자유 게시판", "study" : "그룹 스터디"}
+    titles = {"summary": "수업 요약", "qna": "질문 답변", "lounge": "자유 게시판", "study" : "그룹 스터디", "updates": "업데이트 내역"}
     board_title = titles.get(post_type, "게시판")
     
     # 기존의 글쓰기 폼이 들어있는 board.html을 보여줍니다.
