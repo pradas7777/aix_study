@@ -338,13 +338,17 @@ async def delete_post(
         raise HTTPException(status_code=403, detail="Admin only")
 
     post = db.query(models.Post).filter(models.Post.id == post_id).first()
+    post_type = post.type
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
 
     db.delete(post)
     db.commit()
 
-    return RedirectResponse(url="/", status_code=303)
+    return RedirectResponse(
+        url=f"/board/{post_type}",
+        status_code=303
+    )
 
 @app.post("/post/image/upload")
 async def upload_editor_image(file: UploadFile = File(...)):
