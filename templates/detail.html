@@ -22,54 +22,99 @@
     <a class="btn btn-small" href="/post/{{ post.id }}/edit">수정</a>
   {% endif %}
 </div>
+
 {% if post.files %}
 <div style="margin-top: 30px; padding: 15px; background: #f8f9fa; border-radius: 10px;">
     <h5 style="margin: 0 0 10px 0;">📎 첨부파일</h5>
     {% for file in post.files %}
     <a href="/static/uploads/{{ file.filename }}" download="{{ file.original_name }}" 
-       style="color: #3498db; stext-decoration: none;">
+       style="color: #3498db; text-decoration: none; display: block; margin-bottom: 5px;">
         {{ file.original_name }} (다운로드)
     </a>
     {% endfor %}
 </div>
 {% endif %}
+
+<hr style="margin: 40px 0; border: 0; border-top: 1px solid #eee;">
+
 <div class="comment-section">
     <h3>댓글 ({{ post.comments|length }})</h3>
     
-    {% for comment in post.comments %}
-    <div class="comment">
-        <div class="comment-row">
-
+    {% for comment in root_comments %}
+    <div class="comment" style="border-bottom: 1px solid #eee; padding: 15px 0;">
+        <div class="comment-row" style="display: flex; justify-content: space-between;">
             <div class="comment-body">
-                <div>
-                    <strong>{{ comment.author.nickname }}</strong>:
-                    {{ comment.content }}
-                </div>
-                <div class="meta">
+                <strong>{{ comment.author.nickname }}</strong>
+                <div style="margin: 5px 0;">{{ comment.content }}</div>
+                <div class="meta" style="font-size: 0.8em; color: #888;">
                     {{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}
+                    <a href="javascript:void(0)" onclick="toggleReplyForm('{{ comment.id }}')" style="margin-left: 10px; color: #3498db; text-decoration: none;">답글 달기</a>
                 </div>
             </div>
 
             {% if is_admin or (current_visitor_id and comment.visitor_id == current_visitor_id) %}
-            <form method="post"
-                  action="/comment/{{ comment.id }}/delete"
-                  onsubmit="return confirm('정말 삭제하시겠습니까?');"
-                  class="comment-delete-form">
-                <button type="submit" class="comment-delete-btn">🗑 삭제</button>
+            <form method="post" action="/comment/{{ comment.id }}/delete" onsubmit="return confirm('정말 삭제하시겠습니까?');">
+                <button type="submit" style="background:none; border:none; color:#e74c3c; cursor:pointer;">🗑 삭제</button>
             </form>
             {% endif %}
-
         </div>
+
+        <div id="reply-form-{{ comment.id }}" style="display: none; margin-left: 40px; margin-top: 15px; background: #fcfcfc; padding: 10px; border-radius: 5px; border: 1px solid #eee;">
+            <form action="/post/{{ post.id }}/comment" method="post">
+                <input type="hidden" name="parent_id" value="{{ comment.id }}">
+                <textarea name="content" rows="2" style="width: 100%; border: 1px solid #ddd; padding: 8px;" placeholder="답글을 입력하세요" required></textarea>
+                <div style="text-align: right; margin-top: 5px;">
+                    <button type="submit" class="btn btn-small">답글 등록</button>
+                </div>
+            </form>
+        </div>
+
+        {% if comment.replies %}
+        <div class="replies" style="margin-left: 40px; margin-top: 10px;">
+            {% for reply in comment.replies %}
+            <div class="reply" style="background: #f9f9f9; padding: 10px; border-radius: 5px; margin-bottom: 5px; position: relative;">
+                <div style="display: flex; justify-content: space-between;">
+                    <div>
+                        <strong>ㄴ {{ reply.author.nickname }}</strong>
+                        <div style="margin: 3px 0;">{{ reply.content }}</div>
+                        <div style="font-size: 0.8em; color: #888;">{{ reply.created_at.strftime('%m-%d %H:%M') }}</div>
+                    </div>
+                    
+                    {% if is_admin or (current_visitor_id and reply.visitor_id == current_visitor_id) %}
+                    <form method="post" action="/comment/{{ reply.id }}/delete" onsubmit="return confirm('삭제하시겠습니까?');">
+                        <button type="submit" style="background:none; border:none; color:#e74c3c; cursor:pointer; font-size: 0.8em;">삭제</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
     </div>
     {% endfor %}
 </div>
-    <form action="/post/{{ post.id }}/comment" method="post" style="margin-top: 20px;">
-        <textarea name="content" rows="2" placeholder="댓글을 남겨보세요" required></textarea>
-        <button type="submit" class="btn btn-small" style="margin-top: 5px;">댓글 달기</button>
+
+<div style="margin-top: 30px; background: #f8f9fa; padding: 20px; border-radius: 10px;">
+    <h4 style="margin-top: 0;">댓글 남기기</h4>
+    <form action="/post/{{ post.id }}/comment" method="post">
+        <textarea name="content" rows="3" placeholder="내용을 입력해주세요." required style="width: 100%; border: 1px solid #ddd; padding: 10px; border-radius: 5px;"></textarea>
+        <button type="submit" class="btn btn-small" style="margin-top: 10px; width: 100px;">등록</button>
     </form>
 </div>
 
 <div style="margin-top: 30px;">
     <a href="/board/{{ post.type }}" class="btn btn-small" style="background: #95a5a6;">목록으로 돌아가기</a>
 </div>
+
+<script>
+function toggleReplyForm(commentId) {
+    const form = document.getElementById('reply-form-' + commentId);
+    if (form.style.display === 'none') {
+        form.style.display = 'block';
+    } else {
+        form.style.display = 'none';
+    }
+}
+</script>
+
 {% endblock %}
