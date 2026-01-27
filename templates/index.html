@@ -57,3 +57,18 @@
     <a href="/board/study" class="btn btn-small">더보기</a>
 </section>
 {% endblock %}
+
+<hr>
+
+<section>
+    <h2>업데이트 내역</h2>
+    {% for post in updates %}
+    <div class="card">
+        <a href="/post/{{ post.id }}"><strong>{{ post.title }}</strong></a>
+        <div class="meta">{{ post.created_at.strftime('%Y-%m-%d') }} | {% include "_views.html" %}</div>
+    </div>
+    {% else %}
+    <p>아직 업데이트가 없습니다.</p>
+    {% endfor %}
+    <a href="/board/updates" class="btn btn-small">더보기</a>
+</section>
