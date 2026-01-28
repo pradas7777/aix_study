@@ -27,6 +27,7 @@ class Post(Base):
     files = relationship("PostFile", back_populates="post")
     images = relationship("PostImage", back_populates="post", cascade="all, delete-orphan")
     comments = relationship("Comment", back_populates="post", cascade="all, delete-orphan")
+    views = Column(Integer, nullable=False, default=0)
 
 class PostImage(Base):
     __tablename__ = "post_images"

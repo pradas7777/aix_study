@@ -30,6 +30,9 @@ anonymous_board/
     ├── index.html    # 메인 페이지 (최신 글 목록)
     ├── board.html    # 게시판 목록 및 새 글 작성 폼
     └── detail.html   # 게시글 상세 보기 및 댓글 폼
+    └── edit.html     # 글 수정할때 보는 폼 
+    └── list.html     # 글 목록 화면 
+    └── detail.html   # 조회수 화면
 ```
 
 # 설치 및 실행 방법

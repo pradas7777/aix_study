@@ -1,8 +1,9 @@
 import uuid
-from fastapi import FastAPI, Request, Depends, Form, HTTPException, Response, Cookie
+from fastapi import FastAPI, Request, Depends, Form, HTTPException, Response, Cookie, Query
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from sqlalchemy import update, or_
 from sqlalchemy.orm import Session
 from typing import Optional
 import os
@@ -129,12 +130,15 @@ async def index(
 
     return response
 
+
+
 @app.get("/board/{post_type}", response_class=HTMLResponse)
 async def board_list(
-    post_type: str, 
-    request: Request, 
-    db: Session = Depends(get_db), 
-    admin_token: Optional[str] = Cookie(None), # 쿠키에서 관리자 토큰을 가져옵니다.
+    post_type: str,
+    request: Request,
+    q: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+    admin_token: Optional[str] = Cookie(None),
     visitor_uuid: Optional[str] = Cookie(None)
 ):
     visitor, v_uuid = get_or_create_visitor(db, visitor_uuid)
@@ -144,17 +148,19 @@ async def board_list(
     
     posts = db.query(models.Post).filter(models.Post.type == post_type).order_by(models.Post.created_at.desc()).all()
     
-    titles = {"summary": "수업 요약", "qna": "질문 답변", "lounge": "자유 게시판", "study" : "그룹 스터디", "updates": "업데이트 내역"}
+    titles = {"summary": "수업 요약", "qna": "질문 답변", "lounge": "자유 게시판", "study" : "그룹 스터디", "suggestion": "홈페이지 기능 건의","updates": "홈페이지 업데이트 내역"}
     board_title = titles.get(post_type, "게시판")
-    
+
     return templates.TemplateResponse("list.html", {
-        "request": request, 
-        "posts": posts, 
-        "post_type": post_type, 
+        "request": request,
+        "posts": posts,
+        "post_type": post_type,
         "board_title": board_title,
         "visitor": visitor,
-        "is_admin": is_admin # 템플릿(HTML)에서 쓸 수 있도록 전달합니다.
+        "is_admin": is_admin,
+        "q": q,  # ⭐ 검색어 유지
     })
+
 @app.get("/board/{post_type}/write", response_class=HTMLResponse)
 async def write_page(
     post_type: str, 
@@ -163,7 +169,7 @@ async def write_page(
     visitor_uuid: Optional[str] = Cookie(None)
 ):
     visitor, _ = get_or_create_visitor(db, visitor_uuid)
-    titles = {"summary": "수업 요약", "qna": "질문 답변", "lounge": "자유 게시판", "study" : "그룹 스터디", "updates": "업데이트 내역"}
+    titles = {"summary": "수업 요약", "qna": "질문 답변", "lounge": "자유 게시판", "study" : "그룹 스터디", "suggestion": "홈페이지 기능 건의","updates": "홈페이지 업데이트 내역"}
     board_title = titles.get(post_type, "게시판")
     
     # 기존의 글쓰기 폼이 들어있는 board.html을 보여줍니다.
@@ -182,13 +188,20 @@ async def post_detail(
     visitor_uuid: Optional[str] = Cookie(None)
 ):
     visitor, v_uuid = get_or_create_visitor(db, visitor_uuid)
-    is_admin = admin_token == ADMIN_TOKEN 
-    
+
+    db.execute(
+        update(Post)
+        .where(Post.id == post_id)
+        .values(views=Post.views + 1)
+    )
+    db.commit()
+    # 관리자 여부 확인
+    is_admin = admin_token == ADMIN_TOKEN
+
     post = db.query(models.Post).filter(models.Post.id == post_id).first()
     if not post:
         raise HTTPException(status_code=404, detail="게시글을 찾을 수 없습니다.")
-    
-    # ✅ 최상위 댓글만 가져오기 (대댓글은 replies 관계를 통해 접근)
+
     root_comments = (
         db.query(models.Comment)
         .filter(models.Comment.post_id == post_id, models.Comment.parent_id.is_(None))
@@ -236,7 +249,6 @@ async def edit_post_page(
         "visitor": visitor,
         "is_admin": is_admin
     })
-
 @app.post("/post/{post_id}/edit")
 async def edit_post_save(
     post_id: int,
@@ -349,13 +361,17 @@ async def delete_post(
         raise HTTPException(status_code=403, detail="Admin only")
 
     post = db.query(models.Post).filter(models.Post.id == post_id).first()
+    post_type = post.type
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
 
     db.delete(post)
     db.commit()
 
-    return RedirectResponse(url="/", status_code=303)
+    return RedirectResponse(
+        url=f"/board/{post_type}",
+        status_code=303
+    )
 
 @app.post("/post/image/upload")
 async def upload_editor_image(file: UploadFile = File(...)):

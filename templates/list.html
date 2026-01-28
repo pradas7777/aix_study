@@ -4,6 +4,16 @@
 
 {% block content %}
 <h2>{{ board_title }}</h2>
+<form method="get" action="/board/{{ post_type }}" style="margin-bottom: 20px;">
+    <input
+        type="text"
+        name="q"
+        value="{{ q or '' }}"
+        placeholder="제목 / 내용"
+        style="padding: 6px; width: 220px;"
+    >
+    <button type="submit" class="btn btn-small">검색</button>
+</form>
 
 <div style="margin-bottom: 20px; text-align: left;">
     <a href="/board/{{ post_type }}/write" class="btn">글 쓰러 가기</a>
@@ -17,14 +27,15 @@
         {# 관리자일 때만 삭제 버튼 표시 #}
         {% if is_admin %}
         <form method="post" action="/post/{{ post.id }}/delete" 
-              onsubmit="return confirm('정말 삭제하시겠습니까?');" 
-              style="display: inline; float: right;">
-          <button type="submit" class="admin-delete-btn">🗑 삭제</button>
+                onsubmit="return confirm('정말 삭제하시겠습니까?');"
+                style="display: inline; float: right;">
+            <input type="hidden" name="post_type" value="{{ post_type }}">
+            <button type="submit" class="admin-delete-btn">🗑 삭제</button>
         </form>
         {% endif %}
     </h3>
     <div class="meta">
-        작성자: {{ post.author.nickname }} | {{ post.created_at.strftime('%Y-%m-%d') }}
+        작성자: {{ post.author.nickname }} | {{ post.created_at.strftime('%Y-%m-%d') }}| {% include "_views.html" %}
     </div>
 </div>
 {% else %}

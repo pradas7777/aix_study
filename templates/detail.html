@@ -6,11 +6,7 @@
 
 <article>
     <h1>{{ post.title }}</h1>
-    <div class="meta">
-        <span>작성자: {{ post.author.nickname }}</span> | 
-        <span>{{ post.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
-    </div>
-    
+    <div class="meta"><span>작성자: {{ post.author.nickname }}</span> | <span>{{ post.created_at.strftime('%Y-%m-%d %H:%M') }}</span> | <span>조회수 {{ post.views }}</span></div>
     {% if post.images %}
     <div class="image-gallery" style="margin: 20px 0;">
         {% for img in post.images %}
@@ -18,10 +14,7 @@
         {% endfor %}
     </div>
     {% endif %}
-
-    <div class="post-body" style="font-size: 18px; line-height: 1.8; margin-top: 20px; min-height: 200px;">
-        {{ post.content|safe }}
-    </div>
+    <div class="post-body" style="font-size: 20px; line-height: 1.8;">{{ post.content|safe }}</div>
 </article>
 
 <div style="margin-top: 20px; margin-bottom: 20px;">
