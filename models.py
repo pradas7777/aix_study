@@ -25,9 +25,10 @@ class Post(Base):
     created_at = Column(DateTime, default=datetime.now)
     visitor_id = Column(Integer, ForeignKey("visitors.id"))
     author = relationship("Visitor", back_populates="posts")
-    files = relationship("PostFile", back_populates="post")
+    files = relationship("PostFile", back_populates="post", cascade="all, delete-orphan")
     images = relationship("PostImage", back_populates="post", cascade="all, delete-orphan")
     comments = relationship("Comment", back_populates="post", cascade="all, delete-orphan")
+    votes = relationship("Vote", cascade="all, delete-orphan")
     views = Column(Integer, nullable=False, default=0)
     has_poll = Column(Boolean, default=False, nullable=False)
     poll_options = relationship(
