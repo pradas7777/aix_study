@@ -26,6 +26,43 @@
         <input type="file" id="file-upload" name="file" style="margin-left: 10px;">
         <p style="font-size: 14px; color: #666;">(문서, 압축파일 등을 자유롭게 올릴 수 있습니다.)</p>
         <input type="hidden" name="content" id="content">
+        <label style="display:block; margin:10px 0;">
+            <input type="checkbox" id="has_poll" name="has_poll" value="1">
+            이 글에 투표 추가
+        </label>
+
+        <div id="poll_box" style="display:none; padding:10px; border:1px solid #ddd; border-radius:8px;">
+            <div style="margin-bottom:8px; color:#666; font-size:14px;">
+                옵션은 2개 이상 입력하세요.
+            </div>
+
+            <div id="poll_options">
+                <input name="poll_options" placeholder="옵션 1" style="display:block; margin-bottom:6px; width:100%;">
+                <input name="poll_options" placeholder="옵션 2" style="display:block; margin-bottom:6px; width:100%;">
+            </div>
+
+            <button type="button" class="btn btn-small" onclick="addPollOption()">옵션 추가</button>
+        </div>
+
+        <script>
+            const chk = document.getElementById("has_poll");
+            const box = document.getElementById("poll_box");
+
+            chk.addEventListener("change", () => {
+                box.style.display = chk.checked ? "block" : "none";
+            });
+
+            function addPollOption(){
+                const wrap = document.getElementById("poll_options");
+                const input = document.createElement("input");
+                input.name = "poll_options";
+                input.placeholder = "옵션";
+                input.style.display = "block";
+                input.style.marginBottom = "6px";
+                input.style.width = "100%";
+                 wrap.appendChild(input);
+            }
+        </script>       
         <button type="submit" class="btn" style="margin-top: 10px;">올리기</button>
     </form>
 

@@ -34,6 +34,75 @@
     {% endfor %}
 </div>
 {% endif %}
+{% if request.query_params.get("error") == "invalid_name" %}
+  <div class="alert alert-danger">
+    ❌ 없는 이름입니다. 명단에 있는 실명만 투표할 수 있어요.
+  </div>
+{% elif request.query_params.get("error") == "invalid_option" %}
+  <div class="alert alert-danger">
+    ❌ 잘못된 투표 옵션입니다.
+  </div>
+{% endif %}
+
+{% if post.has_poll %}
+  <div class="card" style="margin-top:20px;">
+    <h3>투표</h3>
+
+    <form id="voteForm" method="post" action="/post/{{ post.id }}/vote">
+      <input id="realname" name="realname" placeholder="실명 입력" required>
+
+      {% for opt in post.poll_options %}
+        <label style="display:block; margin:6px 0;">
+          <input type="radio" name="option_id" value="{{ opt.id }}" required>
+          {{ opt.text }} ({{ opt.vote_count }})
+        </label>
+      {% endfor %}
+
+      <button type="submit" class="btn btn-small">투표하기</button>
+      <div style="font-size:13px; color:#666; margin-top:6px;">
+        같은 실명으로 다시 투표하면 선택이 변경됩니다.
+      </div>
+    </form>
+  <script>
+  const allowedNames = new Set([
+    {% for n in voter_names %}
+      "{{ n|e }}",
+    {% endfor %}
+  ]);
+
+  const form = document.getElementById("voteForm");
+  const input = document.getElementById("realname");
+
+  form.addEventListener("submit", (e) => {
+    const v = input.value.replace(/\s+/g, " ").trim();
+
+    // 빈칸은 required가 브라우저 기본 말풍선으로 막음
+    if (!v) return;
+
+    // 명단에 없으면 제출 막고 말풍선 띄우기
+    if (!allowedNames.has(v)) {
+      e.preventDefault();
+      input.setCustomValidity("명단에 없는 이름입니다.");
+      input.reportValidity();
+    } else {
+      input.setCustomValidity("");
+    }
+  });
+
+  input.addEventListener("input", () => {
+    input.setCustomValidity("");
+  });
+</script>
+
+
+  </div>
+
+    <div style="margin-top: 20px; margin-bottom: 20px;">
+        {% if is_admin or post.visitor_id == visitor.id %}
+            <a class="btn btn-small" href="/post/{{ post.id }}/edit">수정</a>
+        {% endif %}
+    </div>
+{% endif %}
 
 <hr style="margin: 40px 0; border: 0; border-top: 1px solid #eee;">
 

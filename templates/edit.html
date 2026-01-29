@@ -14,6 +14,75 @@
     <textarea name="content" rows="12" required style="width:100%;">{{ post.content }}</textarea>
   </div>
 
+   <label style="display:block; margin:12px 0;">
+    <input type="checkbox" id="has_poll" name="has_poll" value="1"
+         {% if post.has_poll %}checked{% endif %}>
+    이 글에 투표 사용
+  </label>
+
+    <div id="poll_box" style="display:{% if post.has_poll %}block{% else %}none{% endif %};
+     padding:12px; border:1px solid #ddd; border-radius:8px; margin-bottom:16px;">
+
+    <div style="margin-bottom:8px; font-size:14px; color:#666;">
+        옵션은 2개 이상 필요합니다. (표가 있는 옵션은 삭제할 수 없음)
+    </div>
+
+     <div id="poll_options">
+     {% if post.has_poll %}
+         {% for opt in post.poll_options %}
+          <div class="poll-row" style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
+             <input type="hidden" name="poll_option_id" value="{{ opt.id }}">
+             <input type="text" name="poll_option_text" value="{{ opt.text }}" required style="flex:1;">
+             <span style="font-size:13px; color:#666;">({{ opt.vote_count }}표)</span>
+
+             {% if opt.vote_count == 0 %}
+               <button type="button" class="btn btn-small" onclick="removePollRow(this)">삭제</button>
+             {% else %}
+              <button type="button" class="btn btn-small" disabled style="opacity:.5; cursor:not-allowed;">삭제불가</button>
+            {% endif %}
+            </div>
+       {% endfor %}
+     {% endif %}
+      </div>
+
+     <button type="button" class="btn btn-small" onclick="addPollOption()">옵션 추가</button>
+    </div>
+
+    <script>
+     const chk = document.getElementById("has_poll");
+     const box = document.getElementById("poll_box");
+
+     chk.addEventListener("change", () => {
+         const inputs = box.querySelectorAll("input[name='poll_option_text']");
+         if (chk.checked) {
+           box.style.display = "block";
+           inputs.forEach(i => i.required = true);
+         } else {
+           box.style.display = "none";
+           inputs.forEach(i => i.required = false);
+         }
+     });
+
+     function addPollOption(){
+      const wrap = document.getElementById("poll_options");
+      const row = document.createElement("div");
+     row.className = "poll-row";
+     row.style.cssText = "display:flex; gap:8px; align-items:center; margin-bottom:8px;";
+
+       row.innerHTML = `
+          <input type="hidden" name="poll_option_id" value="">
+          <input type="text" name="poll_option_text" placeholder="새 옵션" required style="flex:1;">
+          <span style="font-size:13px; color:#666;">(0표)</span>
+          <button type="button" class="btn btn-small" onclick="removePollRow(this)">삭제</button>
+      `;
+       wrap.appendChild(row);
+      }
+
+     function removePollRow(btn){
+      const row = btn.closest(".poll-row");
+     if (row) row.remove();
+     }
+    </script>
   <div style="margin-top:10px;">
     <button type="submit" class="btn">수정 저장</button>
     <a href="/post/{{ post.id }}" class="btn">취소</a>
