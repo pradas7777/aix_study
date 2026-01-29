@@ -17,12 +17,6 @@
     <div class="post-body" style="font-size: 20px; line-height: 1.8;">{{ post.content|safe }}</div>
 </article>
 
-<div style="margin-top: 20px; margin-bottom: 20px;">
-  {% if is_admin or post.visitor_id == visitor.id %}
-    <a class="btn btn-small" href="/post/{{ post.id }}/edit">수정</a>
-  {% endif %}
-</div>
-
 {% if post.files %}
 <div style="margin-top: 30px; padding: 15px; background: #f8f9fa; border-radius: 10px;">
     <h5 style="margin: 0 0 10px 0;">📎 첨부파일</h5>

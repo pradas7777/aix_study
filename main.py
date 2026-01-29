@@ -199,7 +199,7 @@ async def post_detail(
     # 관리자 여부 확인
     is_admin = admin_token == ADMIN_TOKEN
 
-    post = db.query(models.Post).filter(models.Post.id == post_id).first()
+    post = db.query(models.Post).options(joinedload(models.Post.poll_options)).filter(models.Post.id == post_id).first()
     if not post:
         raise HTTPException(status_code=404, detail="게시글을 찾을 수 없습니다.")
 
@@ -401,15 +401,14 @@ async def create_post(
             original_name=file.filename  # 사용자가 올린 원래 이름 (다운로드용)
         )
         db.add(new_file)
-        
-        if use_poll:
-            options = [o.strip() for o in poll_options if o and o.strip()]
+    #투표관련  
+    if use_poll:
+        options = [o.strip() for o in poll_options if o and o.strip()]
         if len(options) < 2:
             db.rollback()
             return RedirectResponse(url=f"/board/{type}/write", status_code=303)
-
         for i, txt in enumerate(options):
-            db.add(models.PollOption(post_id=new_post.id, text=txt, order=i))
+                db.add(models.PollOption(post_id=new_post.id, text=txt, order=i))
 
     # 7. 모든 변경사항을 최종적으로 DB에 반영합니다.
     db.commit()
