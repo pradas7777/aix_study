@@ -85,6 +85,11 @@ async def index(
         .filter(models.Post.type == "summary")\
         .order_by(models.Post.created_at.desc())\
         .limit(5).all()
+    
+    preview = db.query(models.Post)\
+        .filter(models.Post.type == "preview")\
+        .order_by(models.Post.created_at.desc())\
+        .limit(5).all()
 
     qnas = db.query(models.Post)\
         .filter(models.Post.type == "qna")\
@@ -117,6 +122,7 @@ async def index(
             "lounges": lounges,
             "studies": studies,
             "updates": updates,
+            "preview": preview,
         }
     )
 
@@ -486,6 +492,9 @@ async def delete_post(
     # 🔒 관리자만
     if admin_token != ADMIN_TOKEN:
         raise HTTPException(status_code=403, detail="Admin only")
+    
+    db.query(models.Vote).filter(models.Vote.post_id == post_id).delete()
+    db.query(models.PollOption).filter(models.PollOption.post_id == post_id).delete()
 
     post = db.query(models.Post).filter(models.Post.id == post_id).first()
     post_type = post.type
