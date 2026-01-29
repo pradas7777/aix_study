@@ -97,6 +97,7 @@ input[type="text"], textarea {
     gap: 10px;
     margin-bottom: 20px;
     flex-wrap: wrap;
+    justify-content: center;
 }
 .nav-menu a {
     text-decoration: none;      /* 링크 밑줄을 제거합니다. */
