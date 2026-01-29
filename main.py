@@ -186,8 +186,10 @@ async def post_detail(
     db: Session = Depends(get_db), 
     admin_token: Optional[str] = Cookie(None),
     visitor_uuid: Optional[str] = Cookie(None)
+
 ):
     visitor, v_uuid = get_or_create_visitor(db, visitor_uuid)
+    voter_names = [v.realname for v in db.query(models.Voter).all()]
 
     db.execute(
         update(Post)
@@ -220,6 +222,7 @@ async def post_detail(
         "is_admin": is_admin,
         "current_visitor_id": visitor.id,
         "root_comments": root_comments,  # 이 리스트를 사용합니다.
+        "voter_names": voter_names,
     })
 
 # --- API (데이터 처리) ---
@@ -232,14 +235,16 @@ async def edit_post_page(
     visitor_uuid: Optional[str] = Cookie(None),
 ):
     visitor, v_uuid = get_or_create_visitor(db, visitor_uuid)
-
     is_admin = admin_token == ADMIN_TOKEN
 
-    post = db.query(models.Post).filter(models.Post.id == post_id).first()
+    # ✅ poll_options 같이 로딩
+    post = db.query(models.Post)\
+        .options(joinedload(models.Post.poll_options))\
+        .filter(models.Post.id == post_id).first()
+
     if not post:
         raise HTTPException(status_code=404, detail="게시글을 찾을 수 없습니다.")
 
-    # ✅ 권한 체크: 관리자 OR 작성자만 수정 가능
     if (not is_admin) and (post.visitor_id != visitor.id):
         raise HTTPException(status_code=403, detail="수정 권한이 없습니다.")
 
@@ -254,12 +259,14 @@ async def edit_post_save(
     post_id: int,
     title: str = Form(...),
     content: str = Form(...),
+    has_poll: Optional[str] = Form(None),
+    poll_option_id: List[str] = Form([]),
+    poll_option_text: List[str] = Form([]),
     db: Session = Depends(get_db),
     admin_token: Optional[str] = Cookie(None),
     visitor_uuid: Optional[str] = Cookie(None),
 ):
     visitor, v_uuid = get_or_create_visitor(db, visitor_uuid)
-
     is_admin = admin_token == ADMIN_TOKEN
 
     post = db.query(models.Post).filter(models.Post.id == post_id).first()
@@ -272,6 +279,59 @@ async def edit_post_save(
 
     post.title = title
     post.content = content
+
+    use_poll = (has_poll == "1")
+
+    # ✅ 기존 옵션들 가져오기
+    existing_opts = db.query(models.PollOption).filter(models.PollOption.post_id == post_id).all()
+    existing_by_id = {str(o.id): o for o in existing_opts}
+
+    if not use_poll:
+        # ✅ 투표 제거 (완전 삭제 방식)
+        db.query(models.Vote).filter(models.Vote.post_id == post_id).delete(synchronize_session=False)
+        db.query(models.PollOption).filter(models.PollOption.post_id == post_id).delete(synchronize_session=False)
+        post.has_poll = False
+
+    else:
+        post.has_poll = True
+
+        # 제출된 옵션 정리 (id/text 쌍)
+        pairs = []
+        for oid, txt in zip(poll_option_id, poll_option_text):
+            t = (txt or "").strip()
+            if t:
+                pairs.append((oid.strip(), t))
+
+        if len(pairs) < 2:
+            # 옵션 2개 미만이면 저장 막기
+            raise HTTPException(status_code=400, detail="투표 옵션은 2개 이상 필요합니다.")
+
+        submitted_ids = set([oid for oid, _ in pairs if oid])
+
+        # 1) 업데이트/추가 + order 재정렬
+        order = 0
+        for oid, txt in pairs:
+            if oid and oid in existing_by_id:
+                opt = existing_by_id[oid]
+                opt.text = txt
+                opt.order = order
+            else:
+                db.add(models.PollOption(post_id=post_id, text=txt, order=order))
+            order += 1
+
+        # 2) 삭제된 기존 옵션 처리
+        for oid, opt in existing_by_id.items():
+            if oid not in submitted_ids:
+                # 표가 있으면 삭제 불가 -> 유지
+                if opt.vote_count and opt.vote_count > 0:
+                    opt.order = order
+                    order += 1
+                else:
+                    db.delete(opt)
+
+
+
+
     db.commit()
 
     return RedirectResponse(url=f"/post/{post_id}", status_code=303)
@@ -281,6 +341,8 @@ async def create_post(
     type: str = Form(...),
     title: str = Form(...),
     content: str = Form(...),
+    has_poll: Optional[str] = Form(None),        # "1" or None
+    poll_options: List[str] = Form([]),          # input name="poll_options" 여러개
     images: List[UploadFile] = File(None), # 여러 파일을 리스트로 받습니다.
     file: UploadFile = File(None),
     db: Session = Depends(get_db),
@@ -289,12 +351,15 @@ async def create_post(
     # 1. 익명 사용자 정보를 가져옵니다.
     visitor, _ = get_or_create_visitor(db, visitor_uuid)
 
+    use_poll = (has_poll == "1")
+
     # 2. 게시글 객체를 생성합니다. (image_url은 여기서 넣지 않습니다!)
     new_post = Post(
         type=type,
         title=title,
         content=content,
         visitor_id=visitor.id,
+        has_poll=use_poll,
     )
 
     db.add(new_post)
@@ -341,6 +406,15 @@ async def create_post(
         )
         db.add(new_file)
 
+    if use_poll:
+        options = [o.strip() for o in poll_options if o and o.strip()]
+        if len(options) < 2:
+            db.rollback()
+            return RedirectResponse(url=f"/board/{type}/write", status_code=303)
+
+        for i, txt in enumerate(options):
+            db.add(models.PollOption(post_id=new_post.id, text=txt, order=i))
+
 
     # 7. 모든 변경사항을 최종적으로 DB에 반영합니다.
     db.commit()
@@ -350,6 +424,66 @@ async def create_post(
         url=f"/board/{type}",
         status_code=303
     )
+
+@app.post("/post/{post_id}/vote")
+async def vote_post(
+    post_id: int,
+    realname: str = Form(...),
+    option_id: int = Form(...),
+    db: Session = Depends(get_db),
+):
+    realname = " ".join(realname.split())
+
+    post = db.query(models.Post).filter(models.Post.id == post_id).first()
+    if not post or not post.has_poll:
+        raise HTTPException(status_code=400)
+    voter = db.query(models.Voter).filter(models.Voter.realname == realname).first()
+    if not voter:
+        return RedirectResponse(
+            url=f"/post/{post_id}?error=invalid_name",
+            status_code=303
+        )
+
+    new_opt = db.query(models.PollOption).filter(
+        models.PollOption.id == option_id,
+        models.PollOption.post_id == post_id
+    ).first()
+    if not new_opt:
+        return RedirectResponse(
+            url=f"/post/{post_id}?error=invalid_option",
+            status_code=303
+        )
+
+    # ✅ 기존 투표 있는지 확인
+    existing_vote = db.query(models.Vote).filter(
+        models.Vote.post_id == post_id,
+        models.Vote.voter_id == voter.id
+    ).first()
+
+    if existing_vote:
+        # 같은 옵션이면 아무 것도 안 함
+        if existing_vote.option_id != new_opt.id:
+            old_opt = db.query(models.PollOption).filter(
+                models.PollOption.id == existing_vote.option_id
+            ).first()
+            if old_opt:
+                old_opt.vote_count = max(0, old_opt.vote_count - 1)
+
+            new_opt.vote_count += 1
+            existing_vote.option_id = new_opt.id
+    else:
+        # 신규 투표
+        new_vote = models.Vote(
+            post_id=post_id,
+            option_id=new_opt.id,
+            voter_id=voter.id
+        )
+        db.add(new_vote)
+        new_opt.vote_count += 1
+
+    db.commit()
+    return RedirectResponse(url=f"/post/{post_id}", status_code=303)
+
 @app.post("/post/{post_id}/delete")
 async def delete_post(
     post_id: int,
