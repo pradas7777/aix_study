@@ -1,6 +1,44 @@
 {% extends "base.html" %}
 {% block content %}
-
+<section>
+    <h2>최근 예습 게시판</h2>
+    {% for post in updates %}
+    <div class="card">
+        <a href="/post/{{ post.id }}"><strong>{{ post.title }}</strong></a>
+        <div class="meta">{{ post.created_at.strftime('%Y-%m-%d') }} | {% include "_views.html" %}</div>
+    </div>
+    {% else %}
+    <p>아직 업데이트가 없습니다.</p>
+    {% endfor %}
+    <a href="/board/updates" class="btn btn-small">더보기</a>
+</section>
+<hr>
+<section>
+    <h2>최근 그룹 스터디</h2>
+    {% for post in studies %}
+    <div class="card">
+        <a href="/post/{{ post.id }}"><strong>{{ post.title }}</strong></a>
+        <div class="meta">{{ post.author.nickname }} | {{ post.created_at.strftime('%Y-%m-%d') }}| {% include "_views.html" %}</div>
+    </div>
+    {% else %}
+    <p>아직 게시글이 없습니다.</p>
+    {% endfor %}
+    <a href="/board/study" class="btn btn-small">더보기</a>
+</section>
+<hr>
+<section>
+    <h2>최근 정보 공유 & 잡담</h2>
+    {% for post in lounges %}
+    <div class="card">
+        <a href="/post/{{ post.id }}"><strong>{{ post.title }}</strong></a>
+        <div class="meta">{{ post.author.nickname }} | {{ post.created_at.strftime('%Y-%m-%d') }}| {% include "_views.html" %}</div>
+    </div>
+    {% else %}
+    <p>아직 게시글이 없습니다.</p>
+    {% endfor %}
+    <a href="/board/lounge" class="btn btn-small">더보기</a>
+</section>
+<hr>
 <section>
     <h2> 최근 수업 요약</h2>
     {% for post in summaries %}
@@ -13,9 +51,7 @@
     {% endfor %}
     <a href="/board/summary" class="btn btn-small">더보기</a>
 </section>
-
 <hr>
-
 <section>
     <h2>최근 질문 답변</h2>
     {% for post in qnas %}
@@ -28,37 +64,7 @@
     {% endfor %}
     <a href="/board/qna" class="btn btn-small">더보기</a>
 </section>
-
 <hr>
-
-<section>
-    <h2>정보 공유 & 잡담</h2>
-    {% for post in lounges %}
-    <div class="card">
-        <a href="/post/{{ post.id }}"><strong>{{ post.title }}</strong></a>
-        <div class="meta">{{ post.author.nickname }} | {{ post.created_at.strftime('%Y-%m-%d') }}| {% include "_views.html" %}</div>
-    </div>
-    {% else %}
-    <p>아직 게시글이 없습니다.</p>
-    {% endfor %}
-    <a href="/board/lounge" class="btn btn-small">더보기</a>
-</section>
-
-<section>
-    <h2>그룹 스터디</h2>
-    {% for post in studies %}
-    <div class="card">
-        <a href="/post/{{ post.id }}"><strong>{{ post.title }}</strong></a>
-        <div class="meta">{{ post.author.nickname }} | {{ post.created_at.strftime('%Y-%m-%d') }}| {% include "_views.html" %}</div>
-    </div>
-    {% else %}
-    <p>아직 게시글이 없습니다.</p>
-    {% endfor %}
-    <a href="/board/study" class="btn btn-small">더보기</a>
-</section>
-
-<hr>
-
 <section>
     <h2>업데이트 내역</h2>
     {% for post in updates %}

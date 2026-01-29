@@ -14,6 +14,8 @@
 1. 핵심 게시판 3개 (수업 요약(summary), 질문 답변(qna), 자유 게시판(lounge) -> 'post' 테이블로
                             이미지는 최대 5장까지 하기위해 따로 post_images, 댓글은 comments 
                             2026.01.26 - 그룹스터디 게시판(study) 추가
+                            2026.01.28 - 예습게시판(preview) 추가
+                            
 2. 데이터 베이스는 mysql에서 생성 community_db 
 
 # 프로젝트 구조
