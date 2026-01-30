@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
+
 <section>
     <h2>최근 예습 게시판</h2>
     {% for post in preview %}
@@ -11,19 +12,6 @@
     <p>아직 게시글이 없습니다.</p>
     {% endfor %}
     <a href="/board/preview" class="btn btn-small">더보기</a>
-</section>
-<hr>
-<section>
-    <h2>최근 그룹 스터디</h2>
-    {% for post in studies %}
-    <div class="card">
-        <a href="/post/{{ post.id }}"><strong>{{ post.title }}</strong></a>
-        <div class="meta">{{ post.author.nickname }} | {{ post.created_at.strftime('%Y-%m-%d') }}| {% include "_views.html" %}</div>
-    </div>
-    {% else %}
-    <p>아직 게시글이 없습니다.</p>
-    {% endfor %}
-    <a href="/board/study" class="btn btn-small">더보기</a>
 </section>
 <hr>
 <section>

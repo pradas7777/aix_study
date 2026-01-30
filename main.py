@@ -35,7 +35,6 @@ def check_admin(admin_token: Optional[str] = Cookie(None)):
     if admin_token != ADMIN_TOKEN:
         raise HTTPException(status_code=403, detail="Admin only")
 
-
 def get_or_create_visitor(db: Session, visitor_uuid: Optional[str] = None):
     """방문자 식별 및 생성"""
     if not visitor_uuid:
@@ -100,7 +99,7 @@ async def index(
         .filter(models.Post.type == "lounge")\
         .order_by(models.Post.created_at.desc())\
         .limit(5).all()
-    
+
     studies = db.query(models.Post)\
         .filter(models.Post.type == "study")\
         .order_by(models.Post.created_at.desc())\
@@ -154,7 +153,7 @@ async def board_list(
     
     posts = db.query(models.Post).filter(models.Post.type == post_type).order_by(models.Post.created_at.desc()).all()
     
-    titles = {"summary": "수업 요약", "qna": "질문 답변", "lounge": "자유 게시판", "study" : "그룹 스터디", "suggestion": "홈페이지 기능 건의","updates": "홈페이지 업데이트 내역","preview": "예습 게시판"}
+    titles = {"summary": "수업 요약", "qna": "질문 답변", "lounge": "자유 게시판", "study" : "그룹 스터디", "suggestion": "홈페이지 기능 건의","updates": "홈페이지 업데이트 내역","preview": "예습 게시판",}
     board_title = titles.get(post_type, "게시판")
 
     return templates.TemplateResponse("list.html", {
