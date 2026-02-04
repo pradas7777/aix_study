@@ -18,13 +18,21 @@
 </article>
 
 {% if post.files %}
-<div style="margin-top: 30px; padding: 15px; background: #f8f9fa; border-radius: 10px;">
-    <h5 style="margin: 0 0 10px 0;">📎 첨부파일</h5>
+<div class="attachments" style="margin-top: 30px;">
     {% for file in post.files %}
-    <a href="/static/uploads/{{ file.filename }}" download="{{ file.original_name }}" 
-       style="color: #3498db; text-decoration: none; display: block; margin-bottom: 5px;">
-        {{ file.original_name }} (다운로드)
-    </a>
+        {% if file.filename.endswith('.html') %}
+            <div class="html-preview" style="margin-bottom: 20px;">
+                <h5 style="color: #3498db;">📄 HTML 미리보기: {{ file.original_name }}</h5>
+                <iframe src="/static/uploads/{{ file.filename }}" 
+                        style="width: 100%; height: 500px; border: 1px solid #ddd; border-radius: 10px; background: white;">
+                </iframe>
+            </div>
+        {% endif %}
+        
+        <div class="download-link" style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 5px;">
+            <a href="/static/uploads/{{ file.filename }}" download="{{ file.original_name }}">
+                📎 {{ file.original_name }} (다운로드)
+            </a>
     {% endfor %}
 </div>
 {% endif %}
