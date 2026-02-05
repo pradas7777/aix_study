@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
 
 body {
-    background-image: url('https://cdn.midjourney.com/53bfbd1e-cba2-481d-9952-fa5ac5c89402/0_1.png'); /* 이미지 주소 */
+    background-image: url('https://cdn.midjourney.com/53bfbd1e-cba2-481d-9952-fa5ac5c89402/0_2.png'); /* 이미지 주소 */
     background-size: cover;      /* 이미지가 화면을 가득 채우도록 조절합니다. */
     background-position: center;  /* 이미지의 중심이 화면 가운데 오게 합니다. */
     background-repeat: no-repeat; /* 이미지가 바둑판처럼 반복되지 않게 합니다. */
@@ -20,10 +20,10 @@ body {
 }
 
 .container {
-    width: 90%;
+    width: 95%;
     max-width: 100%;
-    margin: 20px auto;
-    padding: 20px;
+    margin: 10px auto;
+    padding: 10px;
     background-color: #ffffffD8;
     border-radius: 15px;
     box-shadow: 0 2px 15px rgba(0,0,0,0.1);
@@ -31,13 +31,15 @@ body {
     overflow-wrap: break-word !important;
     word-break: break-all;
     
+    
+    
 }
 
 header h1 {
-    font-size: 70px;
+    font-size: 500%;
     border-bottom: 2px solid #eee;
-    padding-bottom: 10px;
-    margin-bottom: 20px;
+    padding-bottom: 0px;
+    margin-bottom:  0px;
 }
 
 h2, h3 {
@@ -95,15 +97,15 @@ input[type="text"], textarea {
 .nav-menu {
     display: flex;
     gap: 10px;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     flex-wrap: wrap;
     justify-content: center;
 }
 .nav-menu a {
     text-decoration: none;      /* 링크 밑줄을 제거합니다. */
     padding: 12px 20px;         /* 버튼 내부에 상하 12px, 좌우 20px 여백을 줍니다. */
-    background-color: hsl(267, 100%, 84%);  /* 버튼 배경을 아주 연한 회색으로 설정합니다. */
-    color: #333;                /* 글자색을 진한 회색으로 바꿉니다. */
+    background-color: hsl(199, 94%, 25%);  /* 버튼 배경을 아주 연한 회색으로 설정합니다. */
+    color: #ffffff;                /* 글자색을 진한 회색으로 바꿉니다. */
     border: 1px solid #dee2e6;  /* 얇은 회색 테두리를 만듭니다. */
     border-radius: 50px;        /* 모서리를 둥글게 깎아 알약 모양으로 만듭니다. */
     font-size: 20px;            /* 글자 크기를 조절합니다. */
